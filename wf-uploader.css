@@ -1,0 +1,80 @@
+.wf-up {
+  --wf-up-primary: #2960e3;
+  --wf-up-bg: #ffffff;
+  --wf-up-bg-hover: #f9fafb;
+  --wf-up-border: #e5e7eb;
+  --wf-up-fg-strong: #1b1c1f;
+  --wf-up-fg-medium: #3e4146;
+  --wf-up-fg-weak: #818996;
+  --wf-up-error: #e53935;
+  --wf-up-success: #16a34a;
+  --wf-up-radius: 16px;
+  --wf-up-padding: 24px;
+  --wf-up-gap: 12px;
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--wf-up-gap);
+  color: var(--wf-up-fg-strong);
+}
+
+.wf-up__dropzone {
+  padding: var(--wf-up-padding);
+  border: 1px dashed var(--wf-up-border);
+  border-radius: var(--wf-up-radius);
+  background: var(--wf-up-bg);
+  text-align: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.wf-up.is-dragover .wf-up__dropzone {
+  background: var(--wf-up-bg-hover);
+  border-color: var(--wf-up-primary);
+}
+
+.wf-up__title {
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.wf-up__description,
+.wf-up__helper {
+  color: var(--wf-up-fg-medium);
+  font-size: 14px;
+}
+
+.wf-up__button {
+  margin-top: 16px;
+  border: 0;
+  border-radius: 999px;
+  padding: 10px 16px;
+  background: var(--wf-up-primary);
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.wf-up__list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.wf-up__file {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--wf-up-border);
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+.wf-up__file.is-uploaded .wf-up__file-status {
+  color: var(--wf-up-success);
+}
+
+.wf-up__file.is-error .wf-up__file-status,
+.wf-up__error {
+  color: var(--wf-up-error);
+}
