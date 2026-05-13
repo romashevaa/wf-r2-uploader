@@ -1,9 +1,9 @@
 (function () {
   "use strict";
 
-  const ROOT_SELECTOR = '[upload="file"]';
+  var ROOT_SELECTOR = '[upload="file"]';
 
-  const VARIANTS = {
+  var VARIANTS = {
     "file-dropzone": renderFileDropzone,
     "file-list": renderFileList,
     "file-list-inside": renderFileListInside,
@@ -21,36 +21,49 @@
   };
 
   ready(function () {
-    document.querySelectorAll(ROOT_SELECTOR).forEach(initUploader);
+    initAllUploaders();
     initExternalControls();
   });
 
+  window.WebflowUploader = window.WebflowUploader || {};
+  window.WebflowUploader.init = initAllUploaders;
+
+  function initAllUploaders() {
+    var roots = document.querySelectorAll(ROOT_SELECTOR);
+
+    roots.forEach(function (root) {
+      initUploader(root);
+    });
+  }
+
   function initUploader(root) {
-    if (root.__wfUploadInitialized) return;
-    root.__wfUploadInitialized = true;
+    if (!root || root.__wfUploadInitialized) return;
 
-    const config = readConfig(root);
+    var config = readConfig(root);
 
-    const state = {
-      root,
-      config,
+    var state = {
+      root: root,
+      config: config,
       files: [],
       error: "",
-      isDragging: false,
       input: null,
       output: null,
       view: null,
     };
 
+    root.__wfUploadInitialized = true;
+    root.__wfUploadState = state;
+
     root.classList.add("wf-up");
-    root.classList.add(`wf-up--${config.variant}`);
+    root.classList.add("wf-up--" + config.variant);
     root.setAttribute("data-wf-up-ready", "true");
 
-    root.innerHTML = `
-      <input class="wf-up__native-input" type="file" hidden data-wf-up-native-input>
-      <input type="hidden" name="${escapeAttr(config.fieldName)}" data-wf-up-output>
-      <div class="wf-up__view" data-wf-up-view></div>
-    `;
+    root.innerHTML =
+      '<input class="wf-up__native-input" type="file" hidden data-wf-up-native-input>' +
+      '<input type="hidden" name="' +
+      escapeAttr(config.fieldName) +
+      '" data-wf-up-output>' +
+      '<div class="wf-up__view" data-wf-up-view></div>';
 
     state.input = root.querySelector("[data-wf-up-native-input]");
     state.output = root.querySelector("[data-wf-up-output]");
@@ -59,7 +72,7 @@
     syncNativeInput(state);
 
     state.input.addEventListener("change", function () {
-      addFiles(Array.from(state.input.files || []), state);
+      addFiles(Array.prototype.slice.call(state.input.files || []), state);
       state.input.value = "";
     });
 
@@ -77,11 +90,14 @@
 
     bindRequiredValidation(state);
     render(state);
-    dispatch(root, "wf-up:ready", { files: [] });
+
+    dispatch(root, "wf-up:ready", {
+      files: [],
+    });
   }
 
   function readConfig(root) {
-    const maxFiles = numberAttr(root, "data-wf-up-max-files", 1);
+    var maxFiles = numberAttr(root, "data-wf-up-max-files", 1);
 
     return {
       endpoint: attr(root, "data-wf-up-endpoint", ""),
@@ -111,7 +127,7 @@
 
       accept: attr(root, "data-wf-up-accept", ""),
       maxSizeMb: numberAttr(root, "data-wf-up-max-size-mb", 10),
-      maxFiles,
+      maxFiles: maxFiles,
       multiple: boolAttr(root, "data-wf-up-multiple", maxFiles > 1),
 
       folder: attr(root, "data-wf-up-folder", "uploads"),
@@ -134,7 +150,9 @@
   }
 
   function render(state) {
-    const renderer = VARIANTS[state.config.variant] || renderFileDropzone;
+    if (!state.view) return;
+
+    var renderer = VARIANTS[state.config.variant] || renderFileDropzone;
 
     state.view.innerHTML = renderer(state);
 
@@ -143,8 +161,10 @@
   }
 
   function bindRenderedActions(state) {
-    state.view.querySelectorAll("[data-wf-up-action]").forEach(function (el) {
-      const action = el.getAttribute("data-wf-up-action");
+    var actions = state.view.querySelectorAll("[data-wf-up-action]");
+
+    actions.forEach(function (el) {
+      var action = el.getAttribute("data-wf-up-action");
 
       if (el.tagName === "BUTTON" && !el.getAttribute("type")) {
         el.setAttribute("type", "button");
@@ -152,13 +172,16 @@
 
       el.addEventListener("click", function (event) {
         event.preventDefault();
+        event.stopPropagation();
 
         if (action === "open") {
           state.input.click();
+          return;
         }
 
         if (action === "remove-all") {
           resetUploader(state);
+          return;
         }
 
         if (action === "remove") {
@@ -167,32 +190,31 @@
       });
     });
 
-    state.view.querySelectorAll("[data-wf-up-dropzone]").forEach(function (zone) {
-      zone.addEventListener("click", function (event) {
-        const actionEl = event.target.closest("[data-wf-up-action]");
+    var dropzones = state.view.querySelectorAll("[data-wf-up-dropzone]");
 
-        if (actionEl) return;
+    dropzones.forEach(function (zone) {
+      zone.addEventListener("click", function (event) {
+        if (event.target.closest && event.target.closest("[data-wf-up-action]")) {
+          return;
+        }
 
         state.input.click();
       });
 
       zone.addEventListener("dragover", function (event) {
         event.preventDefault();
-        state.isDragging = true;
         state.root.classList.add("is-dragging");
       });
 
       zone.addEventListener("dragleave", function () {
-        state.isDragging = false;
         state.root.classList.remove("is-dragging");
       });
 
       zone.addEventListener("drop", function (event) {
         event.preventDefault();
-        state.isDragging = false;
         state.root.classList.remove("is-dragging");
 
-        addFiles(Array.from(event.dataTransfer.files || []), state);
+        addFiles(Array.prototype.slice.call(event.dataTransfer.files || []), state);
       });
     });
   }
@@ -216,31 +238,33 @@
 
     if (!files.length) return;
 
-    const availableSlots = state.config.maxFiles - state.files.length;
+    var availableSlots = state.config.maxFiles - state.files.length;
 
     if (availableSlots <= 0) {
-      setError(state, `You can upload up to ${state.config.maxFiles} file(s).`);
+      setError(state, "You can upload up to " + state.config.maxFiles + " file(s).");
+      render(state);
       return;
     }
 
-    const selectedFiles = state.config.multiple ? files : files.slice(0, 1);
+    var selectedFiles = state.config.multiple ? files : files.slice(0, 1);
 
     if (selectedFiles.length > availableSlots) {
-      setError(state, `You can upload up to ${state.config.maxFiles} file(s).`);
+      setError(state, "You can upload up to " + state.config.maxFiles + " file(s).");
+      render(state);
       return;
     }
 
-    const addedRecords = [];
+    var addedRecords = [];
 
     selectedFiles.forEach(function (file) {
-      const error = validateFile(file, state.config);
+      var error = validateFile(file, state.config);
 
       if (error) {
         setError(state, error);
         return;
       }
 
-      const record = createFileRecord(file);
+      var record = createFileRecord(file);
       state.files.push(record);
       addedRecords.push(record);
 
@@ -262,7 +286,7 @@
   function createFileRecord(file) {
     return {
       id: uniqueId(),
-      file,
+      file: file,
       name: file.name,
       size: file.size,
       type: file.type || "application/octet-stream",
@@ -281,7 +305,7 @@
       record.progress = 0;
       render(state);
 
-      const signed = await getSignedUploadUrl(record.file, state.config);
+      var signed = await getSignedUploadUrl(record.file, state.config);
 
       record.status = "uploading";
       record.progress = 0;
@@ -321,13 +345,13 @@
       });
     } catch (error) {
       record.status = "error";
-      record.error = error.message || state.config.errorText;
+      record.error = error && error.message ? error.message : state.config.errorText;
 
       setError(state, record.error);
       render(state);
 
       dispatch(state.root, "wf-up:upload-error", {
-        error,
+        error: error,
         file: recordToPublicFile(record),
         files: getUploadedFiles(state),
       });
@@ -339,7 +363,7 @@
       throw new Error("Missing data-wf-up-endpoint.");
     }
 
-    const response = await fetch(config.endpoint, {
+    var response = await fetch(config.endpoint, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -352,7 +376,7 @@
       }),
     });
 
-    const data = await response.json().catch(function () {
+    var data = await response.json().catch(function () {
       return {};
     });
 
@@ -365,7 +389,7 @@
 
   function uploadToR2(file, uploadUrl, onProgress) {
     return new Promise(function (resolve, reject) {
-      const xhr = new XMLHttpRequest();
+      var xhr = new XMLHttpRequest();
 
       xhr.open("PUT", uploadUrl);
 
@@ -376,7 +400,7 @@
       xhr.upload.onprogress = function (event) {
         if (!event.lengthComputable) return;
 
-        const percent = Math.round((event.loaded / event.total) * 100);
+        var percent = Math.round((event.loaded / event.total) * 100);
 
         if (typeof onProgress === "function") {
           onProgress(percent);
@@ -387,7 +411,7 @@
         if (xhr.status >= 200 && xhr.status < 300) {
           resolve();
         } else {
-          reject(new Error(`Upload failed with status ${xhr.status}.`));
+          reject(new Error("Upload failed with status " + xhr.status + "."));
         }
       };
 
@@ -400,21 +424,21 @@
   }
 
   function validateFile(file, config) {
-    const maxBytes = config.maxSizeMb * 1024 * 1024;
+    var maxBytes = config.maxSizeMb * 1024 * 1024;
 
     if (file.size > maxBytes) {
-      return `${file.name} is too large. Max size is ${config.maxSizeMb}MB.`;
+      return file.name + " is too large. Max size is " + config.maxSizeMb + "MB.";
     }
 
     if (config.accept && !matchesAccept(file, config.accept)) {
-      return `${file.name} is not an allowed file type.`;
+      return file.name + " is not an allowed file type.";
     }
 
     return "";
   }
 
   function matchesAccept(file, accept) {
-    const rules = accept
+    var rules = accept
       .split(",")
       .map(function (item) {
         return item.trim();
@@ -425,11 +449,11 @@
 
     return rules.some(function (rule) {
       if (rule.endsWith("/*")) {
-        const base = rule.replace("/*", "");
-        return file.type.startsWith(base + "/");
+        var base = rule.replace("/*", "");
+        return file.type.indexOf(base + "/") === 0;
       }
 
-      if (rule.startsWith(".")) {
+      if (rule.charAt(0) === ".") {
         return file.name.toLowerCase().endsWith(rule.toLowerCase());
       }
 
@@ -438,13 +462,13 @@
   }
 
   function removeFile(state, id) {
-    const index = state.files.findIndex(function (file) {
+    var index = state.files.findIndex(function (file) {
       return file.id === id;
     });
 
     if (index === -1) return;
 
-    const removed = state.files[index];
+    var removed = state.files[index];
 
     if (removed.previewUrl) {
       URL.revokeObjectURL(removed.previewUrl);
@@ -487,7 +511,9 @@
   }
 
   function updateOutput(state) {
-    const uploaded = getUploadedFiles(state);
+    if (!state.output) return;
+
+    var uploaded = getUploadedFiles(state);
 
     if (state.config.outputFormat === "urls") {
       state.output.value = uploaded
@@ -535,12 +561,12 @@
   function bindRequiredValidation(state) {
     if (!state.config.required) return;
 
-    const form = state.root.closest("form");
+    var form = state.root.closest("form");
 
     if (!form) return;
 
     form.addEventListener("submit", function (event) {
-      const hasUploadedFile = getUploadedFiles(state).length > 0;
+      var hasUploadedFile = getUploadedFiles(state).length > 0;
 
       if (hasUploadedFile) return;
 
@@ -569,15 +595,21 @@
 
   function initExternalControls() {
     document.addEventListener("click", function (event) {
-      const reset = event.target.closest("[data-wf-up-reset]");
-      const trigger = event.target.closest("[data-wf-up-trigger]");
+      var reset = event.target.closest
+        ? event.target.closest("[data-wf-up-reset]")
+        : null;
+
+      var trigger = event.target.closest
+        ? event.target.closest("[data-wf-up-trigger]")
+        : null;
 
       if (reset) {
         event.preventDefault();
 
-        const target = reset.getAttribute("data-wf-up-target");
-        const uploaders = target
-          ? document.querySelectorAll(target)
+        var resetTarget = reset.getAttribute("data-wf-up-target");
+
+        var uploaders = resetTarget
+          ? document.querySelectorAll(resetTarget)
           : document.querySelectorAll(ROOT_SELECTOR);
 
         uploaders.forEach(function (root) {
@@ -588,13 +620,13 @@
       }
 
       if (trigger) {
-        const target = trigger.getAttribute("data-wf-up-target");
+        var triggerTarget = trigger.getAttribute("data-wf-up-target");
 
-        if (!target) return;
+        if (!triggerTarget) return;
 
         event.preventDefault();
 
-        const root = document.querySelector(target);
+        var root = document.querySelector(triggerTarget);
 
         if (root && root.__wfUpload) {
           root.__wfUpload.open();
@@ -603,415 +635,434 @@
     });
   }
 
-  /* -------------------------------------------------------------------------- */
-  /* Renderers                                                                  */
-  /* -------------------------------------------------------------------------- */
+  /* Renderers */
 
   function renderFileDropzone(state) {
-    const c = state.config;
+    var c = state.config;
 
-    return `
-      <div class="wf-up__panel">
-        ${renderDropzone(state, {
-          icon: "upload",
-          title: c.title,
-          description: c.description,
-          button: c.buttonText,
-          helper: c.helperText || buildDefaultHelper(c),
-        })}
-
-        ${renderFileRows(state, "default")}
-        ${renderFooterActions(state)}
-        ${renderError(state)}
-      </div>
-    `;
+    return (
+      '<div class="wf-up__panel">' +
+      renderDropzone(state, {
+        icon: "upload",
+        title: c.title,
+        description: c.description,
+        button: c.buttonText,
+        helper: c.helperText || buildDefaultHelper(c),
+      }) +
+      renderFileRows(state, "default") +
+      renderFooterActions(state) +
+      renderError(state) +
+      "</div>"
+    );
   }
 
   function renderFileList(state) {
-    const c = state.config;
+    var c = state.config;
 
-    return `
-      <div class="wf-up__panel">
-        <div class="wf-up__header">
-          <div>
-            <div class="wf-up__title">${escapeHtml(c.title)}</div>
-            <div class="wf-up__description">${escapeHtml(c.description)}</div>
-          </div>
-
-          <button class="wf-up__button" data-wf-up-action="open">
-            ${escapeHtml(c.buttonText)}
-          </button>
-        </div>
-
-        ${renderCompactDropzone(state)}
-        ${renderFileRows(state, "default")}
-        ${renderFooterActions(state)}
-        ${renderError(state)}
-      </div>
-    `;
+    return (
+      '<div class="wf-up__panel">' +
+      '<div class="wf-up__header">' +
+      "<div>" +
+      '<div class="wf-up__title">' +
+      escapeHtml(c.title) +
+      "</div>" +
+      '<div class="wf-up__description">' +
+      escapeHtml(c.description) +
+      "</div>" +
+      "</div>" +
+      '<button class="wf-up__button" data-wf-up-action="open">' +
+      escapeHtml(c.buttonText) +
+      "</button>" +
+      "</div>" +
+      renderCompactDropzone(state) +
+      renderFileRows(state, "default") +
+      renderFooterActions(state) +
+      renderError(state) +
+      "</div>"
+    );
   }
 
   function renderFileListInside(state) {
-    const c = state.config;
-    const count = state.files.length;
+    var c = state.config;
+    var count = state.files.length;
 
-    return `
-      <div class="wf-up__panel">
-        ${renderCompactDropzone(state)}
-
-        <div class="wf-up__inside">
-          <div class="wf-up__inside-head">
-            <div class="wf-up__title">Uploaded Files (${count})</div>
-
-            <div class="wf-up__actions">
-              <button class="wf-up__link-button" data-wf-up-action="open">
-                ${escapeHtml(c.addMoreText)}
-              </button>
-
-              ${
-                count
-                  ? `<button class="wf-up__link-button is-danger" data-wf-up-action="remove-all">${escapeHtml(c.removeAllText)}</button>`
-                  : ""
-              }
-            </div>
-          </div>
-
-          ${renderFileRows(state, "inside")}
-        </div>
-
-        ${renderError(state)}
-      </div>
-    `;
+    return (
+      '<div class="wf-up__panel">' +
+      renderCompactDropzone(state) +
+      '<div class="wf-up__inside">' +
+      '<div class="wf-up__inside-head">' +
+      '<div class="wf-up__title">Uploaded Files (' +
+      count +
+      ")</div>" +
+      '<div class="wf-up__actions">' +
+      '<button class="wf-up__link-button" data-wf-up-action="open">' +
+      escapeHtml(c.addMoreText) +
+      "</button>" +
+      (count
+        ? '<button class="wf-up__link-button is-danger" data-wf-up-action="remove-all">' +
+          escapeHtml(c.removeAllText) +
+          "</button>"
+        : "") +
+      "</div>" +
+      "</div>" +
+      renderFileRows(state, "inside") +
+      "</div>" +
+      renderError(state) +
+      "</div>"
+    );
   }
 
   function renderFileTable(state) {
-    const c = state.config;
+    var c = state.config;
 
-    return `
-      <div class="wf-up__panel">
-        <div class="wf-up__header">
-          <div>
-            <div class="wf-up__title">${escapeHtml(c.title)}</div>
-            <div class="wf-up__description">${escapeHtml(c.helperText || buildDefaultHelper(c))}</div>
-          </div>
+    var rows = state.files.length
+      ? state.files
+          .map(function (file) {
+            return (
+              "<tr>" +
+              "<td>" +
+              escapeHtml(file.name) +
+              "</td>" +
+              "<td>" +
+              escapeHtml(getFileExtension(file.name)) +
+              "</td>" +
+              "<td>" +
+              formatBytes(file.size) +
+              "</td>" +
+              "<td>" +
+              renderStatus(file, c) +
+              "</td>" +
+              "<td>" +
+              renderRemoveButton(file, c) +
+              "</td>" +
+              "</tr>"
+            );
+          })
+          .join("")
+      : '<tr><td colspan="5" class="wf-up__empty">No files selected</td></tr>';
 
-          <div class="wf-up__actions">
-            <button class="wf-up__button" data-wf-up-action="open">
-              ${escapeHtml(c.addFilesText)}
-            </button>
-
-            ${
-              state.files.length
-                ? `<button class="wf-up__secondary-button" data-wf-up-action="remove-all">${escapeHtml(c.removeAllText)}</button>`
-                : ""
-            }
-          </div>
-        </div>
-
-        <div class="wf-up__table-wrap">
-          <table class="wf-up__table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Type</th>
-                <th>Size</th>
-                <th>Status</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              ${
-                state.files.length
-                  ? state.files.map(function (file) {
-                      return `
-                        <tr>
-                          <td>${escapeHtml(file.name)}</td>
-                          <td>${escapeHtml(getFileExtension(file.name))}</td>
-                          <td>${formatBytes(file.size)}</td>
-                          <td>${renderStatus(file, c)}</td>
-                          <td>${renderRemoveButton(file, c)}</td>
-                        </tr>
-                      `;
-                    }).join("")
-                  : `<tr><td colspan="5" class="wf-up__empty">No files selected</td></tr>`
-              }
-            </tbody>
-          </table>
-        </div>
-
-        ${renderError(state)}
-      </div>
-    `;
+    return (
+      '<div class="wf-up__panel">' +
+      '<div class="wf-up__header">' +
+      "<div>" +
+      '<div class="wf-up__title">' +
+      escapeHtml(c.title) +
+      "</div>" +
+      '<div class="wf-up__description">' +
+      escapeHtml(c.helperText || buildDefaultHelper(c)) +
+      "</div>" +
+      "</div>" +
+      '<div class="wf-up__actions">' +
+      '<button class="wf-up__button" data-wf-up-action="open">' +
+      escapeHtml(c.addFilesText) +
+      "</button>" +
+      (state.files.length
+        ? '<button class="wf-up__secondary-button" data-wf-up-action="remove-all">' +
+          escapeHtml(c.removeAllText) +
+          "</button>"
+        : "") +
+      "</div>" +
+      "</div>" +
+      '<div class="wf-up__table-wrap">' +
+      '<table class="wf-up__table">' +
+      "<thead>" +
+      "<tr>" +
+      "<th>Name</th>" +
+      "<th>Type</th>" +
+      "<th>Size</th>" +
+      "<th>Status</th>" +
+      "<th></th>" +
+      "</tr>" +
+      "</thead>" +
+      "<tbody>" +
+      rows +
+      "</tbody>" +
+      "</table>" +
+      "</div>" +
+      renderError(state) +
+      "</div>"
+    );
   }
 
   function renderFileCard(state) {
-    const c = state.config;
-    const file = state.files[0];
+    var c = state.config;
+    var file = state.files[0];
 
-    return `
-      <div class="wf-up__card">
-        <div class="wf-up__card-icon">
-          ${renderIcon("file", c)}
-        </div>
-
-        <div class="wf-up__card-body">
-          <div class="wf-up__title">${escapeHtml(c.title)}</div>
-          <div class="wf-up__description">${escapeHtml(c.helperText || c.description)}</div>
-
-          ${
-            file
-              ? renderSingleFileSummary(file, c)
-              : `<button class="wf-up__button" data-wf-up-action="open">${escapeHtml(c.buttonText)}</button>`
-          }
-        </div>
-
-        ${renderError(state)}
-      </div>
-    `;
+    return (
+      '<div class="wf-up__card">' +
+      '<div class="wf-up__card-icon">' +
+      renderIcon("file", c) +
+      "</div>" +
+      '<div class="wf-up__card-body">' +
+      '<div class="wf-up__title">' +
+      escapeHtml(c.title) +
+      "</div>" +
+      '<div class="wf-up__description">' +
+      escapeHtml(c.helperText || c.description) +
+      "</div>" +
+      (file
+        ? renderSingleFileSummary(file, c)
+        : '<button class="wf-up__button" data-wf-up-action="open">' +
+          escapeHtml(c.buttonText) +
+          "</button>") +
+      "</div>" +
+      renderError(state) +
+      "</div>"
+    );
   }
 
   function renderProgressList(state) {
-    const c = state.config;
+    var c = state.config;
 
-    return `
-      <div class="wf-up__panel">
-        <div class="wf-up__header">
-          <div>
-            <div class="wf-up__title">${escapeHtml(c.title)}</div>
-            <div class="wf-up__description">${escapeHtml(c.description)}</div>
-          </div>
+    var rows = state.files.length
+      ? state.files
+          .map(function (file) {
+            return renderProgressRow(file, c);
+          })
+          .join("")
+      : renderEmptyState("No files selected yet.");
 
-          <button class="wf-up__button" data-wf-up-action="open">
-            ${escapeHtml(c.buttonText)}
-          </button>
-        </div>
-
-        <div class="wf-up__progress-list">
-          ${
-            state.files.length
-              ? state.files.map(function (file) {
-                  return renderProgressRow(file, c);
-                }).join("")
-              : renderEmptyState("No files selected yet.")
-          }
-        </div>
-
-        ${renderError(state)}
-      </div>
-    `;
+    return (
+      '<div class="wf-up__panel">' +
+      '<div class="wf-up__header">' +
+      "<div>" +
+      '<div class="wf-up__title">' +
+      escapeHtml(c.title) +
+      "</div>" +
+      '<div class="wf-up__description">' +
+      escapeHtml(c.description) +
+      "</div>" +
+      "</div>" +
+      '<button class="wf-up__button" data-wf-up-action="open">' +
+      escapeHtml(c.buttonText) +
+      "</button>" +
+      "</div>" +
+      '<div class="wf-up__progress-list">' +
+      rows +
+      "</div>" +
+      renderError(state) +
+      "</div>"
+    );
   }
 
   function renderImageDropzone(state) {
-    const c = state.config;
+    var c = state.config;
 
-    return `
-      <div class="wf-up__panel">
-        ${renderDropzone(state, {
-          icon: "image",
-          title: c.title || "Upload image",
-          description: c.description || "Drop your image here or click to browse",
-          button: c.buttonText || "Select image",
-          helper: c.helperText || buildDefaultHelper(c),
-        })}
-
-        ${renderImagePreviewArea(state)}
-        ${renderError(state)}
-      </div>
-    `;
+    return (
+      '<div class="wf-up__panel">' +
+      renderDropzone(state, {
+        icon: "image",
+        title: c.title || "Upload image",
+        description: c.description || "Drop your image here or click to browse",
+        button: c.buttonText || "Select image",
+        helper: c.helperText || buildDefaultHelper(c),
+      }) +
+      renderImagePreviewArea(state) +
+      renderError(state) +
+      "</div>"
+    );
   }
 
   function renderImageSingle(state) {
-    const c = state.config;
-    const file = state.files[0];
+    var c = state.config;
+    var file = state.files[0];
 
-    return `
-      <div class="wf-up__image-single">
-        ${
-          file && file.previewUrl
-            ? `
-              <div class="wf-up__image-single-preview">
-                <img src="${escapeAttr(file.previewUrl)}" alt="${escapeAttr(file.name)}">
-                ${renderRemoveButton(file, c)}
-              </div>
-            `
-            : `
-              <div class="wf-up__image-single-empty" data-wf-up-dropzone>
-                ${renderIcon("image", c)}
-                <div class="wf-up__title">${escapeHtml(c.title || "Upload image")}</div>
-                <div class="wf-up__description">${escapeHtml(c.helperText || "SVG, PNG, JPG or GIF")}</div>
-                <button class="wf-up__button" data-wf-up-action="open">${escapeHtml(c.buttonText || "Select image")}</button>
-              </div>
-            `
-        }
-
-        ${file ? renderSingleFileSummary(file, c) : ""}
-        ${renderError(state)}
-      </div>
-    `;
+    return (
+      '<div class="wf-up__image-single">' +
+      (file && file.previewUrl
+        ? '<div class="wf-up__image-single-preview">' +
+          '<img src="' +
+          escapeAttr(file.previewUrl) +
+          '" alt="' +
+          escapeAttr(file.name) +
+          '">' +
+          renderRemoveButton(file, c) +
+          "</div>"
+        : '<div class="wf-up__image-single-empty" data-wf-up-dropzone>' +
+          renderIcon("image", c) +
+          '<div class="wf-up__title">' +
+          escapeHtml(c.title || "Upload image") +
+          "</div>" +
+          '<div class="wf-up__description">' +
+          escapeHtml(c.helperText || "SVG, PNG, JPG or GIF") +
+          "</div>" +
+          '<button class="wf-up__button" data-wf-up-action="open">' +
+          escapeHtml(c.buttonText || "Select image") +
+          "</button>" +
+          "</div>") +
+      (file ? renderSingleFileSummary(file, c) : "") +
+      renderError(state) +
+      "</div>"
+    );
   }
 
   function renderImageGrid(state) {
-    const c = state.config;
+    var c = state.config;
 
-    return `
-      <div class="wf-up__panel">
-        <div class="wf-up__header">
-          <div>
-            <div class="wf-up__title">Uploaded Files (${state.files.length})</div>
-            <div class="wf-up__description">${escapeHtml(c.helperText || buildDefaultHelper(c))}</div>
-          </div>
+    var tiles = state.files
+      .map(function (file) {
+        return renderImageTile(file, c);
+      })
+      .join("");
 
-          <div class="wf-up__actions">
-            <button class="wf-up__button" data-wf-up-action="open">
-              ${escapeHtml(c.addMoreText)}
-            </button>
+    var add =
+      state.files.length < c.maxFiles
+        ? '<button class="wf-up__image-add" data-wf-up-action="open">' +
+          renderIcon("upload", c) +
+          "<span>" +
+          escapeHtml(c.addMoreText) +
+          "</span>" +
+          "</button>"
+        : "";
 
-            ${
-              state.files.length
-                ? `<button class="wf-up__secondary-button" data-wf-up-action="remove-all">${escapeHtml(c.removeAllText)}</button>`
-                : ""
-            }
-          </div>
-        </div>
-
-        <div class="wf-up__image-grid">
-          ${state.files.map(function (file) {
-            return renderImageTile(file, c);
-          }).join("")}
-
-          ${
-            state.files.length < c.maxFiles
-              ? `
-                <button class="wf-up__image-add" data-wf-up-action="open">
-                  ${renderIcon("upload", c)}
-                  <span>${escapeHtml(c.addMoreText)}</span>
-                </button>
-              `
-              : ""
-          }
-        </div>
-
-        ${renderError(state)}
-      </div>
-    `;
+    return (
+      '<div class="wf-up__panel">' +
+      '<div class="wf-up__header">' +
+      "<div>" +
+      '<div class="wf-up__title">Uploaded Files (' +
+      state.files.length +
+      ")</div>" +
+      '<div class="wf-up__description">' +
+      escapeHtml(c.helperText || buildDefaultHelper(c)) +
+      "</div>" +
+      "</div>" +
+      '<div class="wf-up__actions">' +
+      '<button class="wf-up__button" data-wf-up-action="open">' +
+      escapeHtml(c.addMoreText) +
+      "</button>" +
+      (state.files.length
+        ? '<button class="wf-up__secondary-button" data-wf-up-action="remove-all">' +
+          escapeHtml(c.removeAllText) +
+          "</button>"
+        : "") +
+      "</div>" +
+      "</div>" +
+      '<div class="wf-up__image-grid">' +
+      tiles +
+      add +
+      "</div>" +
+      renderError(state) +
+      "</div>"
+    );
   }
 
   function renderImageList(state) {
-    const c = state.config;
-
-    return `
-      <div class="wf-up__panel">
-        ${renderCompactDropzone(state)}
-        ${renderImageRows(state)}
-        ${renderFooterActions(state)}
-        ${renderError(state)}
-      </div>
-    `;
+    return (
+      '<div class="wf-up__panel">' +
+      renderCompactDropzone(state) +
+      renderImageRows(state) +
+      renderFooterActions(state) +
+      renderError(state) +
+      "</div>"
+    );
   }
 
   function renderAvatar(state) {
-    const c = state.config;
-    const file = state.files[0];
+    var c = state.config;
+    var file = state.files[0];
 
-    return `
-      <div class="wf-up__avatar-wrap">
-        <button class="wf-up__avatar" data-wf-up-action="open" aria-label="${escapeAttr(c.buttonText)}">
-          ${
-            file && file.previewUrl
-              ? `<img src="${escapeAttr(file.previewUrl)}" alt="${escapeAttr(file.name)}">`
-              : renderIcon("image", c)
-          }
-        </button>
-
-        <div class="wf-up__avatar-content">
-          <div class="wf-up__title">${escapeHtml(c.title || "Avatar")}</div>
-          <div class="wf-up__description">${escapeHtml(c.helperText || "Upload image")}</div>
-
-          <div class="wf-up__actions">
-            <button class="wf-up__button" data-wf-up-action="open">
-              ${escapeHtml(c.buttonText || "Upload image")}
-            </button>
-
-            ${file ? renderRemoveButton(file, c, "secondary") : ""}
-          </div>
-
-          ${file ? renderStatus(file, c) : ""}
-          ${renderError(state)}
-        </div>
-      </div>
-    `;
+    return (
+      '<div class="wf-up__avatar-wrap">' +
+      '<button class="wf-up__avatar" data-wf-up-action="open" aria-label="' +
+      escapeAttr(c.buttonText) +
+      '">' +
+      (file && file.previewUrl
+        ? '<img src="' +
+          escapeAttr(file.previewUrl) +
+          '" alt="' +
+          escapeAttr(file.name) +
+          '">'
+        : renderIcon("image", c)) +
+      "</button>" +
+      '<div class="wf-up__avatar-content">' +
+      '<div class="wf-up__title">' +
+      escapeHtml(c.title || "Avatar") +
+      "</div>" +
+      '<div class="wf-up__description">' +
+      escapeHtml(c.helperText || "Upload image") +
+      "</div>" +
+      '<div class="wf-up__actions">' +
+      '<button class="wf-up__button" data-wf-up-action="open">' +
+      escapeHtml(c.buttonText || "Upload image") +
+      "</button>" +
+      (file ? renderRemoveButton(file, c, "secondary") : "") +
+      "</div>" +
+      (file ? renderStatus(file, c) : "") +
+      renderError(state) +
+      "</div>" +
+      "</div>"
+    );
   }
 
   function renderMinimal(state) {
-    const c = state.config;
+    var c = state.config;
 
-    return `
-      <div class="wf-up__minimal">
-        <button class="wf-up__button" data-wf-up-action="open">
-          ${renderIcon("upload", c)}
-          <span>${escapeHtml(c.buttonText)}</span>
-        </button>
-
-        <div class="wf-up__minimal-meta">
-          ${
-            state.files.length
-              ? `${state.files.length} file(s) selected`
-              : escapeHtml(c.helperText || buildDefaultHelper(c))
-          }
-        </div>
-
-        ${renderFileRows(state, "minimal")}
-        ${renderError(state)}
-      </div>
-    `;
+    return (
+      '<div class="wf-up__minimal">' +
+      '<button class="wf-up__button" data-wf-up-action="open">' +
+      renderIcon("upload", c) +
+      "<span>" +
+      escapeHtml(c.buttonText) +
+      "</span>" +
+      "</button>" +
+      '<div class="wf-up__minimal-meta">' +
+      (state.files.length
+        ? state.files.length + " file(s) selected"
+        : escapeHtml(c.helperText || buildDefaultHelper(c))) +
+      "</div>" +
+      renderFileRows(state, "minimal") +
+      renderError(state) +
+      "</div>"
+    );
   }
 
-  /* -------------------------------------------------------------------------- */
-  /* Render helpers                                                             */
-  /* -------------------------------------------------------------------------- */
+  /* Render helpers */
 
   function renderDropzone(state, options) {
-    const c = state.config;
+    var c = state.config;
 
-    return `
-      <div class="wf-up__dropzone" data-wf-up-dropzone>
-        <div class="wf-up__dropzone-icon">
-          ${renderIcon(options.icon || "upload", c)}
-        </div>
-
-        <div class="wf-up__title">${escapeHtml(options.title)}</div>
-        <div class="wf-up__description">${escapeHtml(options.description)}</div>
-
-        <button class="wf-up__button" data-wf-up-action="open">
-          ${escapeHtml(options.button)}
-        </button>
-
-        ${
-          options.helper
-            ? `<div class="wf-up__helper">${escapeHtml(options.helper)}</div>`
-            : ""
-        }
-      </div>
-    `;
+    return (
+      '<div class="wf-up__dropzone" data-wf-up-dropzone>' +
+      '<div class="wf-up__dropzone-icon">' +
+      renderIcon(options.icon || "upload", c) +
+      "</div>" +
+      '<div class="wf-up__title">' +
+      escapeHtml(options.title) +
+      "</div>" +
+      '<div class="wf-up__description">' +
+      escapeHtml(options.description) +
+      "</div>" +
+      '<button class="wf-up__button" data-wf-up-action="open">' +
+      escapeHtml(options.button) +
+      "</button>" +
+      (options.helper
+        ? '<div class="wf-up__helper">' + escapeHtml(options.helper) + "</div>"
+        : "") +
+      "</div>"
+    );
   }
 
   function renderCompactDropzone(state) {
-    const c = state.config;
+    var c = state.config;
 
-    return `
-      <div class="wf-up__compact-dropzone" data-wf-up-dropzone>
-        <div class="wf-up__compact-icon">${renderIcon("upload", c)}</div>
-
-        <div>
-          <div class="wf-up__title">${escapeHtml(c.title)}</div>
-          <div class="wf-up__description">${escapeHtml(c.helperText || buildDefaultHelper(c))}</div>
-        </div>
-
-        <button class="wf-up__button" data-wf-up-action="open">
-          ${escapeHtml(c.buttonText)}
-        </button>
-      </div>
-    `;
+    return (
+      '<div class="wf-up__compact-dropzone" data-wf-up-dropzone>' +
+      '<div class="wf-up__compact-icon">' +
+      renderIcon("upload", c) +
+      "</div>" +
+      "<div>" +
+      '<div class="wf-up__title">' +
+      escapeHtml(c.title) +
+      "</div>" +
+      '<div class="wf-up__description">' +
+      escapeHtml(c.helperText || buildDefaultHelper(c)) +
+      "</div>" +
+      "</div>" +
+      '<button class="wf-up__button" data-wf-up-action="open">' +
+      escapeHtml(c.buttonText) +
+      "</button>" +
+      "</div>"
+    );
   }
 
   function renderFileRows(state, mode) {
@@ -1019,30 +1070,41 @@
       return renderEmptyState("No files selected yet.");
     }
 
-    return `
-      <div class="wf-up__file-list wf-up__file-list--${escapeAttr(mode || "default")}">
-        ${state.files.map(function (file) {
+    return (
+      '<div class="wf-up__file-list wf-up__file-list--' +
+      escapeAttr(mode || "default") +
+      '">' +
+      state.files
+        .map(function (file) {
           return renderFileRow(file, state.config);
-        }).join("")}
-      </div>
-    `;
+        })
+        .join("") +
+      "</div>"
+    );
   }
 
   function renderFileRow(file, c) {
-    return `
-      <div class="wf-up__file">
-        <div class="wf-up__file-icon">${renderIcon("file", c)}</div>
-
-        <div class="wf-up__file-info">
-          <div class="wf-up__file-name">${escapeHtml(file.name)}</div>
-          <div class="wf-up__file-meta">${formatBytes(file.size)} · ${escapeHtml(getFileExtension(file.name))}</div>
-        </div>
-
-        <div class="wf-up__file-status">${renderStatus(file, c)}</div>
-
-        ${renderRemoveButton(file, c)}
-      </div>
-    `;
+    return (
+      '<div class="wf-up__file">' +
+      '<div class="wf-up__file-icon">' +
+      renderIcon("file", c) +
+      "</div>" +
+      '<div class="wf-up__file-info">' +
+      '<div class="wf-up__file-name">' +
+      escapeHtml(file.name) +
+      "</div>" +
+      '<div class="wf-up__file-meta">' +
+      formatBytes(file.size) +
+      " · " +
+      escapeHtml(getFileExtension(file.name)) +
+      "</div>" +
+      "</div>" +
+      '<div class="wf-up__file-status">' +
+      renderStatus(file, c) +
+      "</div>" +
+      renderRemoveButton(file, c) +
+      "</div>"
+    );
   }
 
   function renderImageRows(state) {
@@ -1050,121 +1112,146 @@
       return renderEmptyState("No images selected yet.");
     }
 
-    return `
-      <div class="wf-up__image-list">
-        ${state.files.map(function (file) {
-          return `
-            <div class="wf-up__image-row">
-              <div class="wf-up__image-thumb">
-                ${
-                  file.previewUrl
-                    ? `<img src="${escapeAttr(file.previewUrl)}" alt="${escapeAttr(file.name)}">`
-                    : renderIcon("image", state.config)
-                }
-              </div>
-
-              <div class="wf-up__file-info">
-                <div class="wf-up__file-name">${escapeHtml(file.name)}</div>
-                <div class="wf-up__file-meta">${formatBytes(file.size)}</div>
-              </div>
-
-              <div class="wf-up__file-status">${renderStatus(file, state.config)}</div>
-              ${renderRemoveButton(file, state.config)}
-            </div>
-          `;
-        }).join("")}
-      </div>
-    `;
+    return (
+      '<div class="wf-up__image-list">' +
+      state.files
+        .map(function (file) {
+          return (
+            '<div class="wf-up__image-row">' +
+            '<div class="wf-up__image-thumb">' +
+            (file.previewUrl
+              ? '<img src="' +
+                escapeAttr(file.previewUrl) +
+                '" alt="' +
+                escapeAttr(file.name) +
+                '">'
+              : renderIcon("image", state.config)) +
+            "</div>" +
+            '<div class="wf-up__file-info">' +
+            '<div class="wf-up__file-name">' +
+            escapeHtml(file.name) +
+            "</div>" +
+            '<div class="wf-up__file-meta">' +
+            formatBytes(file.size) +
+            "</div>" +
+            "</div>" +
+            '<div class="wf-up__file-status">' +
+            renderStatus(file, state.config) +
+            "</div>" +
+            renderRemoveButton(file, state.config) +
+            "</div>"
+          );
+        })
+        .join("") +
+      "</div>"
+    );
   }
 
   function renderImagePreviewArea(state) {
     if (!state.files.length) return "";
 
-    return `
-      <div class="wf-up__image-preview-row">
-        ${state.files.map(function (file) {
+    return (
+      '<div class="wf-up__image-preview-row">' +
+      state.files
+        .map(function (file) {
           return renderImageTile(file, state.config);
-        }).join("")}
-      </div>
-    `;
+        })
+        .join("") +
+      "</div>"
+    );
   }
 
   function renderImageTile(file, c) {
-    return `
-      <div class="wf-up__image-tile">
-        ${
-          file.previewUrl
-            ? `<img src="${escapeAttr(file.previewUrl)}" alt="${escapeAttr(file.name)}">`
-            : renderIcon("image", c)
-        }
-
-        <div class="wf-up__image-tile-overlay">
-          <span>${renderStatus(file, c)}</span>
-          ${renderRemoveButton(file, c)}
-        </div>
-      </div>
-    `;
+    return (
+      '<div class="wf-up__image-tile">' +
+      (file.previewUrl
+        ? '<img src="' +
+          escapeAttr(file.previewUrl) +
+          '" alt="' +
+          escapeAttr(file.name) +
+          '">'
+        : renderIcon("image", c)) +
+      '<div class="wf-up__image-tile-overlay">' +
+      "<span>" +
+      renderStatus(file, c) +
+      "</span>" +
+      renderRemoveButton(file, c) +
+      "</div>" +
+      "</div>"
+    );
   }
 
   function renderSingleFileSummary(file, c) {
-    return `
-      <div class="wf-up__single-summary">
-        <div>
-          <div class="wf-up__file-name">${escapeHtml(file.name)}</div>
-          <div class="wf-up__file-meta">${formatBytes(file.size)}</div>
-        </div>
-
-        <div class="wf-up__file-status">${renderStatus(file, c)}</div>
-        ${renderRemoveButton(file, c)}
-      </div>
-    `;
+    return (
+      '<div class="wf-up__single-summary">' +
+      "<div>" +
+      '<div class="wf-up__file-name">' +
+      escapeHtml(file.name) +
+      "</div>" +
+      '<div class="wf-up__file-meta">' +
+      formatBytes(file.size) +
+      "</div>" +
+      "</div>" +
+      '<div class="wf-up__file-status">' +
+      renderStatus(file, c) +
+      "</div>" +
+      renderRemoveButton(file, c) +
+      "</div>"
+    );
   }
 
   function renderProgressRow(file, c) {
-    return `
-      <div class="wf-up__progress-row">
-        <div class="wf-up__file-icon">${renderIcon(isImageType(file.type) ? "image" : "file", c)}</div>
-
-        <div class="wf-up__progress-body">
-          <div class="wf-up__progress-head">
-            <div class="wf-up__file-name">${escapeHtml(file.name)}</div>
-            <div class="wf-up__file-meta">${formatBytes(file.size)}</div>
-          </div>
-
-          <div class="wf-up__progress-track">
-            <div class="wf-up__progress-fill" style="width:${Number(file.progress || 0)}%;"></div>
-          </div>
-
-          <div class="wf-up__progress-foot">${renderStatus(file, c)}</div>
-        </div>
-
-        ${renderRemoveButton(file, c)}
-      </div>
-    `;
+    return (
+      '<div class="wf-up__progress-row">' +
+      '<div class="wf-up__file-icon">' +
+      renderIcon(isImageType(file.type) ? "image" : "file", c) +
+      "</div>" +
+      '<div class="wf-up__progress-body">' +
+      '<div class="wf-up__progress-head">' +
+      '<div class="wf-up__file-name">' +
+      escapeHtml(file.name) +
+      "</div>" +
+      '<div class="wf-up__file-meta">' +
+      formatBytes(file.size) +
+      "</div>" +
+      "</div>" +
+      '<div class="wf-up__progress-track">' +
+      '<div class="wf-up__progress-fill" style="width:' +
+      Number(file.progress || 0) +
+      '%;"></div>' +
+      "</div>" +
+      '<div class="wf-up__progress-foot">' +
+      renderStatus(file, c) +
+      "</div>" +
+      "</div>" +
+      renderRemoveButton(file, c) +
+      "</div>"
+    );
   }
 
   function renderFooterActions(state) {
-    const c = state.config;
+    var c = state.config;
 
     if (!state.files.length) return "";
 
-    return `
-      <div class="wf-up__footer">
-        <button class="wf-up__link-button" data-wf-up-action="open">
-          ${escapeHtml(c.addMoreText)}
-        </button>
-
-        <button class="wf-up__link-button is-danger" data-wf-up-action="remove-all">
-          ${escapeHtml(c.removeAllText)}
-        </button>
-      </div>
-    `;
+    return (
+      '<div class="wf-up__footer">' +
+      '<button class="wf-up__link-button" data-wf-up-action="open">' +
+      escapeHtml(c.addMoreText) +
+      "</button>" +
+      '<button class="wf-up__link-button is-danger" data-wf-up-action="remove-all">' +
+      escapeHtml(c.removeAllText) +
+      "</button>" +
+      "</div>"
+    );
   }
 
   function renderStatus(file, c) {
     if (file.status === "pending") return "Waiting";
     if (file.status === "signing") return "Preparing";
-    if (file.status === "uploading") return `${escapeHtml(c.uploadingText)} ${file.progress || 0}%`;
+    if (file.status === "uploading") {
+      return escapeHtml(c.uploadingText) + " " + (file.progress || 0) + "%";
+    }
     if (file.status === "uploaded") return escapeHtml(c.successText);
     if (file.status === "error") return escapeHtml(file.error || c.errorText);
 
@@ -1174,93 +1261,94 @@
   function renderRemoveButton(file, c, style) {
     if (!c.allowRemove) return "";
 
-    const className =
-      style === "secondary"
-        ? "wf-up__secondary-button"
-        : "wf-up__remove-button";
+    var className =
+      style === "secondary" ? "wf-up__secondary-button" : "wf-up__remove-button";
 
-    return `
-      <button
-        class="${className}"
-        data-wf-up-action="remove"
-        data-wf-up-id="${escapeAttr(file.id)}"
-        aria-label="${escapeAttr(c.removeText)}"
-      >
-        ${c.iconRemove ? renderIcon("remove", c) : "×"}
-      </button>
-    `;
+    return (
+      '<button class="' +
+      className +
+      '" data-wf-up-action="remove" data-wf-up-id="' +
+      escapeAttr(file.id) +
+      '" aria-label="' +
+      escapeAttr(c.removeText) +
+      '">' +
+      (c.iconRemove ? renderIcon("remove", c) : "×") +
+      "</button>"
+    );
   }
 
   function renderError(state) {
     if (!state.error) return "";
 
-    return `<div class="wf-up__error">${escapeHtml(state.error)}</div>`;
+    return '<div class="wf-up__error">' + escapeHtml(state.error) + "</div>";
   }
 
   function renderEmptyState(text) {
-    return `<div class="wf-up__empty">${escapeHtml(text)}</div>`;
+    return '<div class="wf-up__empty">' + escapeHtml(text) + "</div>";
   }
 
   function renderIcon(type, c) {
-    const url =
-      type === "upload"
-        ? c.iconUpload
-        : type === "image"
-        ? c.iconImage
-        : type === "remove"
-        ? c.iconRemove
-        : c.iconFile;
+    var url = "";
+
+    if (type === "upload") {
+      url = c.iconUpload;
+    } else if (type === "image") {
+      url = c.iconImage;
+    } else if (type === "remove") {
+      url = c.iconRemove;
+    } else {
+      url = c.iconFile;
+    }
 
     if (url) {
-      return `<img class="wf-up__custom-icon" src="${escapeAttr(url)}" alt="">`;
+      return '<img class="wf-up__custom-icon" src="' + escapeAttr(url) + '" alt="">';
     }
 
     if (type === "image") {
-      return `
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v13a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 18.5v-13Z" fill="none" stroke="currentColor" stroke-width="1.8"/>
-          <path d="M8 15l2.2-2.2a1 1 0 0 1 1.4 0L14 15.2l1.2-1.2a1 1 0 0 1 1.4 0L20 17.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-          <circle cx="8.5" cy="8.5" r="1.4" fill="currentColor"/>
-        </svg>
-      `;
+      return (
+        '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+        '<path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v13A2.5 2.5 0 0 1 17.5 21h-11A2.5 2.5 0 0 1 4 18.5v-13Z" fill="none" stroke="currentColor" stroke-width="1.8"/>' +
+        '<path d="M8 15l2.2-2.2a1 1 0 0 1 1.4 0L14 15.2l1.2-1.2a1 1 0 0 1 1.4 0L20 17.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>' +
+        '<circle cx="8.5" cy="8.5" r="1.4" fill="currentColor"/>' +
+        "</svg>"
+      );
     }
 
     if (type === "remove") {
-      return `
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-      `;
+      return (
+        '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+        '<path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' +
+        "</svg>"
+      );
     }
 
     if (type === "file") {
-      return `
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M7 3h7l5 5v13H7V3Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-          <path d="M14 3v5h5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-        </svg>
-      `;
+      return (
+        '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+        '<path d="M7 3h7l5 5v13H7V3Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>' +
+        '<path d="M14 3v5h5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>' +
+        "</svg>"
+      );
     }
 
-    return `
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M12 16V4m0 0L7 9m5-5 5 5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M5 16v2.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
-      </svg>
-    `;
+    return (
+      '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+      '<path d="M12 16V4m0 0L7 9m5-5 5 5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '<path d="M5 16v2.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>' +
+      "</svg>"
+    );
   }
 
-  /* -------------------------------------------------------------------------- */
-  /* Utils                                                                      */
-  /* -------------------------------------------------------------------------- */
+  /* Utils */
 
   function attr(el, name, fallback) {
-    const value = el.getAttribute(name);
+    var value = el.getAttribute(name);
+
     return value === null || value === "" ? fallback : value;
   }
 
   function boolAttr(el, name, fallback) {
-    const value = el.getAttribute(name);
+    var value = el.getAttribute(name);
 
     if (value === null || value === "") return fallback;
 
@@ -1268,17 +1356,29 @@
   }
 
   function numberAttr(el, name, fallback) {
-    const value = Number(el.getAttribute(name));
+    var raw = el.getAttribute(name);
+
+    if (raw === null || raw === "") return fallback;
+
+    var value = Number(raw);
 
     return Number.isFinite(value) ? value : fallback;
   }
 
   function buildDefaultHelper(c) {
-    const parts = [];
+    var parts = [];
 
-    if (c.accept) parts.push(c.accept);
-    if (c.maxFiles) parts.push(`Max ${c.maxFiles} file${c.maxFiles === 1 ? "" : "s"}`);
-    if (c.maxSizeMb) parts.push(`Up to ${c.maxSizeMb}MB`);
+    if (c.accept) {
+      parts.push(c.accept);
+    }
+
+    if (c.maxFiles) {
+      parts.push("Max " + c.maxFiles + " file" + (c.maxFiles === 1 ? "" : "s"));
+    }
+
+    if (c.maxSizeMb) {
+      parts.push("Up to " + c.maxSizeMb + "MB");
+    }
 
     return parts.join(" · ");
   }
@@ -1288,32 +1388,37 @@
   }
 
   function isImageType(type) {
-    return String(type || "").startsWith("image/");
+    return String(type || "").indexOf("image/") === 0;
   }
 
   function getFileExtension(name) {
-    const parts = String(name || "").split(".");
+    var parts = String(name || "").split(".");
+
     return parts.length > 1 ? parts.pop().toUpperCase() : "FILE";
   }
 
   function formatBytes(bytes) {
     if (!bytes) return "0 B";
 
-    const units = ["B", "KB", "MB", "GB"];
-    const index = Math.min(
+    var units = ["B", "KB", "MB", "GB"];
+
+    var index = Math.min(
       Math.floor(Math.log(bytes) / Math.log(1024)),
       units.length - 1
     );
 
-    const value = bytes / Math.pow(1024, index);
+    var value = bytes / Math.pow(1024, index);
 
-    return `${value.toFixed(index === 0 ? 0 : 1)} ${units[index]}`;
+    return value.toFixed(index === 0 ? 0 : 1) + " " + units[index];
   }
 
   function uniqueId() {
-    return `wfup_${Date.now().toString(36)}_${Math.random()
-      .toString(36)
-      .slice(2, 8)}`;
+    return (
+      "wfup_" +
+      Date.now().toString(36) +
+      "_" +
+      Math.random().toString(36).slice(2, 8)
+    );
   }
 
   function escapeHtml(value) {
@@ -1332,7 +1437,7 @@
     root.dispatchEvent(
       new CustomEvent(name, {
         bubbles: true,
-        detail,
+        detail: detail,
       })
     );
   }
