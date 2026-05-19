@@ -21,73 +21,56 @@
   };
 
   var VARIANT_COPY = {
-    "file-dropzone": {
-      title: "Upload files",
-      description: "Drag & drop or click to browse",
-      helperText: "All files ∙ Max 10 files ∙ Up to 100MB",
-      buttonText: "Add files",
-      emptyText: "No file chosen",
+    minimal: {
+      title: "Basic image uploader",
+      buttonText: "Upload image",
+      caption: "Basic image uploader",
+      captionLinkText: "Docs",
+      accept: "image/*",
+      maxFiles: 1,
+      multiple: false,
+      icon: "avatar",
     },
 
-    "file-list": {
-      title: "Upload files",
-      description: "Drag & drop or click to browse",
-      helperText: "All files ∙ Max 10 files ∙ Up to 100MB",
-      buttonText: "Add files",
-      emptyText: "No file chosen",
-    },
-
-    "file-list-inside": {
-      title: "Uploaded Files",
-      description: "",
-      buttonText: "Add more",
-      addMoreText: "Add more",
-      removeAllText: "Remove all",
-      emptyText: "No file chosen",
-    },
-
-    "file-table": {
-      title: "Files",
-      description: "",
-      buttonText: "Add files",
-      addFilesText: "Add files",
-      removeAllText: "Remove all",
-      emptyText: "No file chosen",
-    },
-
-    "file-card": {
-      title: "Upload file",
-      description: "Drag & drop or click to browse (max. 10MB)",
-      buttonText: "Upload file",
-      helperText: "",
-      emptyText: "No file chosen",
-    },
-
-    "progress-list": {
-      title: "Files",
-      description: "",
-      buttonText: "Add files",
-      addFilesText: "Add files",
-      removeAllText: "Remove all",
-      emptyText: "No file chosen",
-    },
-
-    "image-dropzone": {
-      title: "Drop your images here",
-      description: "SVG, PNG, JPG or GIF (max. 5MB)",
-      buttonText: "Select images",
-      helperText: "",
-      addMoreText: "Add more",
-      removeAllText: "Remove all files",
-      emptyText: "No file chosen",
+    avatar: {
+      title: "Avatar uploader with droppable area",
+      buttonText: "Upload image",
+      caption: "Avatar uploader with droppable area",
+      captionLinkText: "API",
+      accept: "image/*",
+      maxFiles: 1,
+      multiple: false,
+      icon: "avatar",
     },
 
     "image-single": {
       title: "Drop your image here",
       description: "SVG, PNG, JPG or GIF (max. 2MB)",
+      helperText: "",
       buttonText: "Select image",
-      helperText: "Max size: 5MB",
-      emptyText: "No file chosen",
+      caption: "Single image uploader w/ max size (drop area + button)",
+      captionLinkText: "API",
+      accept: "image/svg+xml,image/png,image/jpeg,image/jpg,image/gif",
+      maxSizeMb: 2,
+      maxFiles: 1,
+      multiple: false,
+      icon: "image",
+    },
+
+    "image-dropzone": {
+      title: "Drop your images here",
+      description: "SVG, PNG, JPG or GIF (max. 5MB)",
+      helperText: "",
+      buttonText: "Select images",
+      addMoreText: "Add more",
+      removeAllText: "Remove all files",
+      caption: "Multiple image uploader w/ image list",
+      captionLinkText: "API",
+      accept: "image/svg+xml,image/png,image/jpeg,image/jpg,image/gif",
+      maxSizeMb: 5,
+      maxFiles: 10,
+      multiple: true,
+      icon: "image",
     },
 
     "image-grid": {
@@ -96,33 +79,114 @@
       buttonText: "Add more",
       addMoreText: "Add more",
       removeAllText: "Remove all files",
-      emptyText: "No file chosen",
+      caption: "Multiple image uploader w/ image grid",
+      captionLinkText: "API",
+      accept: "image/svg+xml,image/png,image/jpeg,image/jpg,image/gif",
+      maxSizeMb: 5,
+      maxFiles: 10,
+      multiple: true,
+      icon: "image",
     },
 
     "image-list": {
       title: "Drop your images here",
       description: "SVG, PNG, JPG or GIF (max. 5MB)",
-      buttonText: "Select images",
       helperText: "",
+      buttonText: "Select images",
       addMoreText: "Add more",
       removeAllText: "Remove all files",
-      emptyText: "No file chosen",
+      caption: "Multiple image uploader w/ image list",
+      captionLinkText: "API",
+      accept: "image/svg+xml,image/png,image/jpeg,image/jpg,image/gif",
+      maxSizeMb: 5,
+      maxFiles: 10,
+      multiple: true,
+      icon: "image",
     },
 
-    avatar: {
-      title: "Avatar upload button",
-      description: "",
-      buttonText: "Upload image",
-      helperText: "",
-      emptyText: "No file chosen",
-    },
-
-    minimal: {
+    "file-card": {
       title: "Upload file",
-      description: "",
+      description: "Drag & drop or click to browse (max. 10MB)",
+      helperText: "",
       buttonText: "Upload file",
-      helperText: "No file chosen",
-      emptyText: "No file chosen",
+      caption: "Single file uploader w/ max size",
+      captionLinkText: "API",
+      maxSizeMb: 10,
+      maxFiles: 1,
+      multiple: false,
+      icon: "file",
+    },
+
+    "file-dropzone": {
+      title: "Upload files",
+      description: "Drag & drop or click to browse",
+      helperText: "All files ∙ Max 10 files ∙ Up to 100MB",
+      buttonText: "Add files",
+      addMoreText: "Add files",
+      removeAllText: "Remove all",
+      caption: "Multiple files uploader w/ list",
+      captionLinkText: "API",
+      maxSizeMb: 100,
+      maxFiles: 10,
+      multiple: true,
+      icon: "upload",
+    },
+
+    "file-list": {
+      title: "Upload files",
+      description: "Drag & drop or click to browse",
+      helperText: "All files ∙ Max 10 files ∙ Up to 100MB",
+      buttonText: "Add files",
+      addMoreText: "Add files",
+      removeAllText: "Remove all",
+      caption: "Multiple files uploader w/ list",
+      captionLinkText: "API",
+      maxSizeMb: 100,
+      maxFiles: 10,
+      multiple: true,
+      icon: "upload",
+    },
+
+    "file-list-inside": {
+      title: "Uploaded Files",
+      description: "",
+      buttonText: "Add more",
+      addMoreText: "Add more",
+      removeAllText: "Remove all",
+      caption: "Multiple files uploader w/ list inside",
+      captionLinkText: "API",
+      maxSizeMb: 100,
+      maxFiles: 10,
+      multiple: true,
+      icon: "file",
+    },
+
+    "file-table": {
+      title: "Files",
+      description: "",
+      buttonText: "Add files",
+      addFilesText: "Add files",
+      removeAllText: "Remove all",
+      caption: "Multiple files uploader w/ table",
+      captionLinkText: "API",
+      maxSizeMb: 100,
+      maxFiles: 10,
+      multiple: true,
+      icon: "file",
+    },
+
+    "progress-list": {
+      title: "Files",
+      description: "",
+      buttonText: "Add files",
+      addFilesText: "Add files",
+      removeAllText: "Remove all",
+      caption: "With simulated progress track",
+      captionLinkText: "API",
+      maxSizeMb: 100,
+      maxFiles: 10,
+      multiple: true,
+      icon: "file",
     },
   };
 
@@ -203,9 +267,10 @@
   }
 
   function readConfig(root) {
-    var maxFiles = numberAttr(root, "data-wf-up-max-files", 1);
     var variant = normalizeVariant(attr(root, "data-wf-up-variant", "file-dropzone"));
     var copy = VARIANT_COPY[variant] || {};
+    var maxFiles = numberAttr(root, "data-wf-up-max-files", copy.maxFiles || 1);
+    var maxSizeMb = numberAttr(root, "data-wf-up-max-size-mb", copy.maxSizeMb || 10);
 
     return {
       endpoint: attr(root, "data-wf-up-endpoint", ""),
@@ -213,16 +278,27 @@
 
       title: attr(root, "data-wf-up-title", copy.title || "Upload files"),
       description: attr(root, "data-wf-up-description", copy.description || ""),
-      buttonText: attr(root, "data-wf-up-button-text", copy.buttonText || "Add files"),
       helperText: attr(root, "data-wf-up-helper-text", copy.helperText || ""),
+      buttonText: attr(root, "data-wf-up-button-text", copy.buttonText || "Add files"),
 
       addMoreText: attr(root, "data-wf-up-add-more-text", copy.addMoreText || "Add more"),
       addFilesText: attr(root, "data-wf-up-add-files-text", copy.addFilesText || "Add files"),
       removeText: attr(root, "data-wf-up-remove-text", "Remove"),
       removeAllText: attr(root, "data-wf-up-remove-all-text", copy.removeAllText || "Remove all"),
-      emptyText: attr(root, "data-wf-up-empty-text", copy.emptyText || "No file chosen"),
+      emptyText: attr(root, "data-wf-up-empty-text", "No file chosen"),
+
+      caption: attr(root, "data-wf-up-caption", copy.caption || ""),
+      captionLinkText: attr(root, "data-wf-up-caption-link-text", copy.captionLinkText || "API"),
+      docsUrl: attr(
+        root,
+        "data-wf-up-docs-url",
+        "https://github.com/cosscom/coss/blob/main/apps/origin/docs/use-file-upload.md"
+      ),
+      showCaption: boolAttr(root, "data-wf-up-show-caption", true),
 
       uploadingText: attr(root, "data-wf-up-uploading-text", "Uploading"),
+      preparingText: attr(root, "data-wf-up-preparing-text", "Preparing"),
+      waitingText: attr(root, "data-wf-up-waiting-text", "Waiting"),
       successText: attr(root, "data-wf-up-success-text", "Uploaded"),
       errorText: attr(
         root,
@@ -231,10 +307,10 @@
       ),
       requiredText: attr(root, "data-wf-up-required-text", "Please upload a file."),
 
-      accept: attr(root, "data-wf-up-accept", ""),
-      maxSizeMb: numberAttr(root, "data-wf-up-max-size-mb", 10),
+      accept: attr(root, "data-wf-up-accept", copy.accept || ""),
+      maxSizeMb: maxSizeMb,
       maxFiles: maxFiles,
-      multiple: boolAttr(root, "data-wf-up-multiple", maxFiles > 1),
+      multiple: boolAttr(root, "data-wf-up-multiple", copy.multiple !== undefined ? copy.multiple : maxFiles > 1),
 
       folder: attr(root, "data-wf-up-folder", "uploads"),
       fieldName: attr(root, "data-wf-up-field-name", "uploaded_files"),
@@ -310,15 +386,18 @@
       zone.addEventListener("dragover", function (event) {
         event.preventDefault();
         state.root.classList.add("is-dragging");
+        zone.setAttribute("data-dragging", "true");
       });
 
       zone.addEventListener("dragleave", function () {
         state.root.classList.remove("is-dragging");
+        zone.removeAttribute("data-dragging");
       });
 
       zone.addEventListener("drop", function (event) {
         event.preventDefault();
         state.root.classList.remove("is-dragging");
+        zone.removeAttribute("data-dragging");
 
         addFiles(Array.prototype.slice.call(event.dataTransfer.files || []), state);
       });
@@ -742,80 +821,210 @@
   }
 
   /* -------------------------------------------------------------------------- */
-  /* Renderers                                                                  */
+  /* Coss-like renderers                                                        */
   /* -------------------------------------------------------------------------- */
+
+  function renderMinimal(state) {
+    var c = state.config;
+    var file = state.files[0];
+
+    var body =
+      '<div class="wf-up__center-stack">' +
+      '<div class="wf-up__inline-row">' +
+      '<div class="wf-up__avatar-icon" aria-label="Default user avatar">' +
+      (file && file.previewUrl
+        ? '<img src="' + escapeAttr(file.previewUrl) + '" alt="' + escapeAttr(file.name) + '">'
+        : renderIcon("avatar", c)) +
+      "</div>" +
+      '<div class="wf-up__relative-inline">' +
+      renderActionButton(c.buttonText, c, "md", "upload") +
+      "</div>" +
+      "</div>" +
+      "</div>";
+
+    return renderComponent(state, body);
+  }
+
+  function renderAvatar(state) {
+    var c = state.config;
+    var file = state.files[0];
+
+    var body =
+      '<div class="wf-up__center-stack">' +
+      '<div class="wf-up__relative-inline">' +
+      '<button class="wf-up__avatar-button" data-wf-up-action="open" aria-label="' +
+      escapeAttr(c.buttonText) +
+      '">' +
+      (file && file.previewUrl
+        ? '<img src="' + escapeAttr(file.previewUrl) + '" alt="' + escapeAttr(file.name) + '">'
+        : renderIcon("avatar", c)) +
+      "</button>" +
+      "</div>" +
+      "</div>";
+
+    return renderComponent(state, body);
+  }
+
+  function renderImageSingle(state) {
+    var c = state.config;
+    var file = state.files[0];
+
+    var body =
+      '<div class="wf-up__field-stack">' +
+      '<div class="wf-up__relative">' +
+      '<div class="wf-up__drop-area wf-up__drop-area--large' +
+      (file && file.previewUrl ? " has-file" : "") +
+      '" data-wf-up-dropzone role="button" tabindex="-1">' +
+      (file && file.previewUrl
+        ? renderSingleImagePreview(file, c)
+        : renderDropContent(c, {
+            icon: "image-up",
+            title: c.title,
+            description: c.description,
+            buttonText: c.buttonText,
+            showButton: true,
+          })) +
+      "</div>" +
+      "</div>" +
+      (file ? renderSingleFileSummary(file, c) : "") +
+      "</div>";
+
+    return renderComponent(state, body);
+  }
+
+  function renderImageDropzone(state) {
+    var c = state.config;
+    var hasFiles = state.files.length > 0;
+
+    var body =
+      '<div class="wf-up__field-stack">' +
+      '<div class="wf-up__drop-area wf-up__drop-area--large" data-wf-up-dropzone ' +
+      (hasFiles ? 'data-files="true"' : "") +
+      ">" +
+      (hasFiles
+        ? renderImageListContent(state)
+        : renderDropContent(c, {
+            icon: "image",
+            title: c.title,
+            description: c.description,
+            buttonText: c.buttonText,
+            showButton: true,
+          })) +
+      "</div>" +
+      "</div>";
+
+    return renderComponent(state, body);
+  }
+
+  function renderImageGrid(state) {
+    var c = state.config;
+    var hasFiles = state.files.length > 0;
+
+    var body =
+      '<div class="wf-up__field-stack">' +
+      '<div class="wf-up__drop-area wf-up__drop-area--large" data-wf-up-dropzone ' +
+      (hasFiles ? 'data-files="true"' : "") +
+      ">" +
+      (hasFiles
+        ? renderImageGridContent(state)
+        : renderDropContent(c, {
+            icon: "image",
+            title: "Drop your images here",
+            description: "SVG, PNG, JPG or GIF (max. " + c.maxSizeMb + "MB)",
+            buttonText: c.buttonText,
+            showButton: true,
+          })) +
+      "</div>" +
+      "</div>";
+
+    return renderComponent(state, body);
+  }
+
+  function renderImageList(state) {
+    return renderImageDropzone(state);
+  }
+
+  function renderFileCard(state) {
+    var c = state.config;
+    var file = state.files[0];
+
+    var body =
+      '<div class="wf-up__field-stack">' +
+      '<div class="wf-up__drop-area wf-up__drop-area--compact" data-wf-up-dropzone>' +
+      (file
+        ? renderFileCardList(state)
+        : renderDropContent(c, {
+            icon: "file",
+            title: c.title,
+            description: c.description,
+            buttonText: c.buttonText,
+            showButton: true,
+          })) +
+      "</div>" +
+      "</div>";
+
+    return renderComponent(state, body);
+  }
 
   function renderFileDropzone(state) {
     var c = state.config;
+    var hasFiles = state.files.length > 0;
 
-    return (
-      '<div class="wf-up__panel">' +
-      renderDropzone(state, {
-        icon: "upload",
-        title: c.title,
-        description: c.description,
-        button: c.buttonText,
-        helper: c.helperText || buildDefaultHelper(c),
-      }) +
-      renderFileRows(state, "default") +
-      renderFooterActions(state) +
-      renderError(state) +
-      "</div>"
-    );
+    var body =
+      '<div class="wf-up__field-stack">' +
+      '<div class="wf-up__drop-area wf-up__drop-area--large" data-wf-up-dropzone ' +
+      (hasFiles ? 'data-files="true"' : "") +
+      ">" +
+      (hasFiles
+        ? renderFileListContent(state)
+        : renderDropContent(c, {
+            icon: "upload",
+            title: c.title,
+            description: c.description,
+            helper: c.helperText,
+            buttonText: c.buttonText,
+            showButton: false,
+          })) +
+      "</div>" +
+      "</div>";
+
+    return renderComponent(state, body);
   }
 
   function renderFileList(state) {
-    var c = state.config;
-
-    return (
-      '<div class="wf-up__panel">' +
-      '<div class="wf-up__header">' +
-      "<div>" +
-      '<div class="wf-up__title">' +
-      escapeHtml(c.title) +
-      "</div>" +
-      '<div class="wf-up__description">' +
-      escapeHtml(c.description) +
-      "</div>" +
-      "</div>" +
-      renderOpenButton(c.buttonText, c) +
-      "</div>" +
-      renderCompactDropzone(state) +
-      renderFileRows(state, "default") +
-      renderFooterActions(state) +
-      renderError(state) +
-      "</div>"
-    );
+    return renderFileDropzone(state);
   }
 
   function renderFileListInside(state) {
     var c = state.config;
-    var count = state.files.length;
 
-    return (
-      '<div class="wf-up__panel">' +
-      renderCompactDropzone(state) +
-      '<div class="wf-up__inside">' +
-      '<div class="wf-up__inside-head">' +
-      '<div class="wf-up__title">Uploaded Files (' +
-      count +
-      ")</div>" +
-      '<div class="wf-up__actions">' +
-      '<button class="wf-up__link-button" data-wf-up-action="open">' +
-      escapeHtml(c.addMoreText) +
-      "</button>" +
-      (count
-        ? '<button class="wf-up__link-button is-danger" data-wf-up-action="remove-all">' +
-          escapeHtml(c.removeAllText) +
-          "</button>"
+    var body =
+      '<div class="wf-up__field-stack">' +
+      '<div class="wf-up__files-panel" data-files="' +
+      (state.files.length ? "true" : "false") +
+      '">' +
+      '<div class="wf-up__files-header">' +
+      '<h3 class="wf-up__heading">Uploaded Files (' +
+      state.files.length +
+      ")</h3>" +
+      (state.files.length
+        ? renderActionButton(c.removeAllText, c, "sm", "trash", "remove-all")
         : "") +
       "</div>" +
+      '<div class="wf-up__file-list">' +
+      (state.files.length
+        ? state.files.map(function (file) {
+            return renderFileRow(file, c);
+          }).join("")
+        : renderEmptyState(c.emptyText)) +
       "</div>" +
-      renderFileRows(state, "inside") +
+      '<div class="wf-up__files-footer">' +
+      renderActionButton(c.addMoreText, c, "sm", "upload") +
       "</div>" +
-      renderError(state) +
-      "</div>"
-    );
+      "</div>" +
+      "</div>";
+
+    return renderComponent(state, body);
   }
 
   function renderFileTable(state) {
@@ -824,42 +1033,24 @@
     var rows = state.files.length
       ? state.files
           .map(function (file) {
-            return (
-              "<tr>" +
-              "<td>" +
-              escapeHtml(file.name) +
-              "</td>" +
-              "<td>" +
-              escapeHtml(getFileExtension(file.name)) +
-              "</td>" +
-              "<td>" +
-              formatBytes(file.size) +
-              "</td>" +
-              "<td>" +
-              renderRemoveButton(file, c) +
-              "</td>" +
-              "</tr>"
-            );
+            return renderTableRow(file, c);
           })
           .join("")
-      : '<tr><td colspan="4" class="wf-up__empty">' +
+      : '<tr><td class="wf-up__table-empty" colspan="4">' +
         escapeHtml(c.emptyText) +
         "</td></tr>";
 
-    return (
-      '<div class="wf-up__panel">' +
-      '<div class="wf-up__header">' +
-      "<div>" +
-      '<div class="wf-up__title">Files (' +
+    var body =
+      '<div class="wf-up__field-stack">' +
+      '<div class="wf-up__table-card">' +
+      '<div class="wf-up__files-header">' +
+      '<h3 class="wf-up__heading">Files (' +
       state.files.length +
-      ")</div>" +
-      "</div>" +
+      ")</h3>" +
       '<div class="wf-up__actions">' +
-      renderOpenButton(c.addFilesText, c) +
+      renderActionButton(c.addFilesText, c, "sm", "upload") +
       (state.files.length
-        ? '<button class="wf-up__secondary-button" data-wf-up-action="remove-all">' +
-          escapeHtml(c.removeAllText) +
-          "</button>"
+        ? renderActionButton(c.removeAllText, c, "sm", "trash", "remove-all")
         : "") +
       "</div>" +
       "</div>" +
@@ -878,239 +1069,114 @@
       "</tbody>" +
       "</table>" +
       "</div>" +
-      renderError(state) +
-      "</div>"
-    );
-  }
+      "</div>" +
+      "</div>";
 
-  function renderFileCard(state) {
-    var c = state.config;
-    var file = state.files[0];
-
-    return (
-      '<div class="wf-up__card">' +
-      '<div class="wf-up__card-icon">' +
-      renderIcon("file", c) +
-      "</div>" +
-      '<div class="wf-up__card-body">' +
-      '<div class="wf-up__title">' +
-      escapeHtml(c.title) +
-      "</div>" +
-      '<div class="wf-up__description">' +
-      escapeHtml(c.description || c.helperText) +
-      "</div>" +
-      (file ? renderSingleFileSummary(file, c) : renderOpenButton(c.buttonText, c)) +
-      "</div>" +
-      renderError(state) +
-      "</div>"
-    );
+    return renderComponent(state, body);
   }
 
   function renderProgressList(state) {
     var c = state.config;
 
-    var rows = state.files.length
-      ? state.files
-          .map(function (file) {
-            return renderProgressRow(file, c);
-          })
-          .join("")
-      : renderEmptyState(c.emptyText);
-
-    return (
-      '<div class="wf-up__panel">' +
-      '<div class="wf-up__header">' +
-      "<div>" +
-      '<div class="wf-up__title">Files (' +
+    var body =
+      '<div class="wf-up__field-stack">' +
+      '<div class="wf-up__files-panel">' +
+      '<div class="wf-up__files-header">' +
+      '<h3 class="wf-up__heading">Files (' +
       state.files.length +
-      ")</div>" +
-      "</div>" +
+      ")</h3>" +
       '<div class="wf-up__actions">' +
-      renderOpenButton(c.addFilesText, c) +
+      renderActionButton(c.addFilesText, c, "sm", "upload") +
       (state.files.length
-        ? '<button class="wf-up__secondary-button" data-wf-up-action="remove-all">' +
-          escapeHtml(c.removeAllText) +
-          "</button>"
+        ? renderActionButton(c.removeAllText, c, "sm", "trash", "remove-all")
         : "") +
       "</div>" +
       "</div>" +
       '<div class="wf-up__progress-list">' +
-      rows +
-      "</div>" +
-      renderError(state) +
-      "</div>"
-    );
-  }
-
-  function renderImageDropzone(state) {
-    var c = state.config;
-
-    return (
-      '<div class="wf-up__panel">' +
-      renderDropzone(state, {
-        icon: "image",
-        title: c.title,
-        description: c.description,
-        button: c.buttonText,
-        helper: c.helperText,
-      }) +
-      renderImagePreviewArea(state) +
-      renderError(state) +
-      "</div>"
-    );
-  }
-
-  function renderImageSingle(state) {
-    var c = state.config;
-    var file = state.files[0];
-
-    return (
-      '<div class="wf-up__image-single">' +
-      (file && file.previewUrl
-        ? '<div class="wf-up__image-single-preview">' +
-          '<img src="' +
-          escapeAttr(file.previewUrl) +
-          '" alt="' +
-          escapeAttr(file.name) +
-          '">' +
-          renderRemoveButton(file, c) +
-          "</div>"
-        : '<div class="wf-up__image-single-empty" data-wf-up-dropzone>' +
-          renderIcon("image", c) +
-          '<div class="wf-up__title">' +
-          escapeHtml(c.title) +
-          "</div>" +
-          '<div class="wf-up__description">' +
-          escapeHtml(c.description) +
-          "</div>" +
-          renderOpenButton(c.buttonText, c) +
-          "</div>") +
-      (file ? renderSingleFileSummary(file, c) : "") +
-      renderError(state) +
-      "</div>"
-    );
-  }
-
-  function renderImageGrid(state) {
-    var c = state.config;
-
-    var tiles = state.files
-      .map(function (file) {
-        return renderImageTile(file, c);
-      })
-      .join("");
-
-    var add =
-      state.files.length < c.maxFiles
-        ? '<button class="wf-up__image-add" data-wf-up-action="open">' +
-          renderIcon("upload", c) +
-          "<span>" +
-          escapeHtml(c.addMoreText) +
-          "</span>" +
-          "</button>"
-        : "";
-
-    return (
-      '<div class="wf-up__panel">' +
-      '<div class="wf-up__header">' +
-      "<div>" +
-      '<div class="wf-up__title">Uploaded Files (' +
-      state.files.length +
-      ")</div>" +
-      "</div>" +
-      '<div class="wf-up__actions">' +
-      '<button class="wf-up__link-button" data-wf-up-action="open">' +
-      escapeHtml(c.addMoreText) +
-      "</button>" +
       (state.files.length
-        ? '<button class="wf-up__link-button is-danger" data-wf-up-action="remove-all">' +
-          escapeHtml(c.removeAllText) +
-          "</button>"
-        : "") +
+        ? state.files.map(function (file) {
+            return renderProgressRow(file, c);
+          }).join("")
+        : renderEmptyState(c.emptyText)) +
       "</div>" +
       "</div>" +
-      '<div class="wf-up__image-grid">' +
-      tiles +
-      add +
-      "</div>" +
-      renderError(state) +
-      "</div>"
-    );
-  }
+      "</div>";
 
-  function renderImageList(state) {
-    return (
-      '<div class="wf-up__panel">' +
-      renderCompactDropzone(state) +
-      renderImageRows(state) +
-      renderFooterActions(state) +
-      renderError(state) +
-      "</div>"
-    );
-  }
-
-  function renderAvatar(state) {
-    var c = state.config;
-    var file = state.files[0];
-
-    return (
-      '<div class="wf-up__avatar-wrap">' +
-      '<button class="wf-up__avatar" data-wf-up-action="open" aria-label="' +
-      escapeAttr(c.buttonText) +
-      '">' +
-      (file && file.previewUrl
-        ? '<img src="' +
-          escapeAttr(file.previewUrl) +
-          '" alt="' +
-          escapeAttr(file.name) +
-          '">'
-        : renderIcon("image", c)) +
-      "</button>" +
-      '<div class="wf-up__avatar-content">' +
-      '<div class="wf-up__title">' +
-      escapeHtml(c.title) +
-      "</div>" +
-      (c.description
-        ? '<div class="wf-up__description">' + escapeHtml(c.description) + "</div>"
-        : "") +
-      '<div class="wf-up__actions">' +
-      renderOpenButton(c.buttonText, c) +
-      (file ? renderRemoveButton(file, c, "secondary") : "") +
-      "</div>" +
-      (file ? renderStatus(file, c) : "") +
-      renderError(state) +
-      "</div>" +
-      "</div>"
-    );
-  }
-
-  function renderMinimal(state) {
-    var c = state.config;
-
-    return (
-      '<div class="wf-up__minimal">' +
-      renderOpenButton(c.buttonText, c) +
-      '<div class="wf-up__minimal-meta">' +
-      (state.files.length
-        ? state.files.length + " file(s) selected"
-        : escapeHtml(c.helperText || c.emptyText)) +
-      "</div>" +
-      renderFileRows(state, "minimal") +
-      renderError(state) +
-      "</div>"
-    );
+    return renderComponent(state, body);
   }
 
   /* -------------------------------------------------------------------------- */
   /* Render helpers                                                             */
   /* -------------------------------------------------------------------------- */
 
-  function renderOpenButton(text, c, className) {
+  function renderComponent(state, body) {
+    return (
+      '<div class="wf-up__component wf-up__component--' +
+      escapeAttr(state.config.variant) +
+      '">' +
+      body +
+      renderCaption(state.config) +
+      renderError(state) +
+      "</div>"
+    );
+  }
+
+  function renderCaption(c) {
+    if (!c.showCaption || !c.caption) return "";
+
+    return (
+      '<p class="wf-up__caption" aria-live="polite" role="region">' +
+      escapeHtml(c.caption) +
+      " ∙ " +
+      '<a class="wf-up__caption-link" href="' +
+      escapeAttr(c.docsUrl) +
+      '" target="_blank" rel="noreferrer">' +
+      escapeHtml(c.captionLinkText) +
+      "</a>" +
+      "</p>"
+    );
+  }
+
+  function renderDropContent(c, options) {
+    return (
+      '<div class="wf-up__drop-content">' +
+      '<div class="wf-up__drop-icon" aria-hidden="true">' +
+      renderIcon(options.icon || c.icon || "upload", c) +
+      "</div>" +
+      '<p class="wf-up__drop-title">' +
+      escapeHtml(options.title || "") +
+      "</p>" +
+      (options.description
+        ? '<p class="wf-up__drop-description">' +
+          escapeHtml(options.description) +
+          "</p>"
+        : "") +
+      (options.helper
+        ? '<p class="wf-up__drop-helper">' +
+          escapeHtml(options.helper) +
+          "</p>"
+        : "") +
+      (options.showButton
+        ? renderActionButton(options.buttonText || c.buttonText, c, "md", "upload", "open", "wf-up__button--drop")
+        : "") +
+      "</div>"
+    );
+  }
+
+  function renderActionButton(text, c, size, icon, action, extraClass) {
+    var actionName = action || "open";
+    var className =
+      "wf-up__button wf-up__button--" +
+      (size || "sm") +
+      (extraClass ? " " + extraClass : "");
+
     return (
       '<button class="' +
-      (className || "wf-up__button") +
-      '" data-wf-up-action="open">' +
-      renderIcon("upload", c) +
+      className +
+      '" data-wf-up-action="' +
+      escapeAttr(actionName) +
+      '">' +
+      renderIcon(icon || "upload", c) +
       "<span>" +
       escapeHtml(text) +
       "</span>" +
@@ -1118,81 +1184,145 @@
     );
   }
 
-  function renderDropzone(state, options) {
+  function renderImageGridContent(state) {
     var c = state.config;
 
     return (
-      '<div class="wf-up__dropzone" data-wf-up-dropzone>' +
-      '<div class="wf-up__dropzone-icon">' +
-      renderIcon(options.icon || "upload", c) +
+      '<div class="wf-up__files-content">' +
+      '<div class="wf-up__files-header">' +
+      '<h3 class="wf-up__heading">Uploaded Files (' +
+      state.files.length +
+      ")</h3>" +
+      renderActionButton(c.addMoreText, c, "sm", "upload") +
       "</div>" +
-      '<div class="wf-up__title">' +
-      escapeHtml(options.title) +
+      '<div class="wf-up__image-grid">' +
+      state.files.map(function (file) {
+        return renderImageGridItem(file, c);
+      }).join("") +
       "</div>" +
-      (options.description
-        ? '<div class="wf-up__description">' +
-          escapeHtml(options.description) +
-          "</div>"
-        : "") +
-      renderOpenButton(options.button, c) +
-      (options.helper
-        ? '<div class="wf-up__helper">' + escapeHtml(options.helper) + "</div>"
-        : "") +
       "</div>"
     );
   }
 
-  function renderCompactDropzone(state) {
+  function renderImageListContent(state) {
     var c = state.config;
 
     return (
-      '<div class="wf-up__compact-dropzone" data-wf-up-dropzone>' +
-      '<div class="wf-up__compact-icon">' +
-      renderIcon("upload", c) +
+      '<div class="wf-up__files-content">' +
+      '<div class="wf-up__drop-content wf-up__drop-content--compact">' +
+      '<div class="wf-up__drop-icon" aria-hidden="true">' +
+      renderIcon("image", c) +
       "</div>" +
-      "<div>" +
-      '<div class="wf-up__title">' +
+      '<p class="wf-up__drop-title">' +
       escapeHtml(c.title) +
+      "</p>" +
+      '<p class="wf-up__drop-description">' +
+      escapeHtml(c.description) +
+      "</p>" +
+      renderActionButton(c.buttonText, c, "md", "upload", "open", "wf-up__button--drop") +
       "</div>" +
-      (c.description
-        ? '<div class="wf-up__description">' +
-          escapeHtml(c.description) +
+      '<div class="wf-up__image-list">' +
+      state.files.map(function (file) {
+        return renderImageListRow(file, c);
+      }).join("") +
+      "</div>" +
+      (state.files.length
+        ? '<div class="wf-up__files-footer">' +
+          renderActionButton(c.removeAllText, c, "sm", "trash", "remove-all") +
           "</div>"
         : "") +
-      (c.helperText
-        ? '<div class="wf-up__helper">' +
-          escapeHtml(c.helperText) +
-          "</div>"
-        : "") +
-      "</div>" +
-      renderOpenButton(c.buttonText, c) +
       "</div>"
     );
   }
 
-  function renderFileRows(state, mode) {
-    if (!state.files.length) {
-      return renderEmptyState(state.config.emptyText);
-    }
+  function renderFileListContent(state) {
+    var c = state.config;
 
     return (
-      '<div class="wf-up__file-list wf-up__file-list--' +
-      escapeAttr(mode || "default") +
-      '">' +
-      state.files
-        .map(function (file) {
-          return renderFileRow(file, state.config);
-        })
-        .join("") +
+      '<div class="wf-up__files-content">' +
+      '<div class="wf-up__drop-content wf-up__drop-content--compact">' +
+      '<p class="wf-up__drop-title">' +
+      escapeHtml(c.title) +
+      "</p>" +
+      '<p class="wf-up__drop-description">' +
+      escapeHtml(c.description) +
+      "</p>" +
+      '<p class="wf-up__drop-helper">' +
+      escapeHtml(c.helperText || buildDefaultHelper(c)) +
+      "</p>" +
+      "</div>" +
+      '<div class="wf-up__file-list">' +
+      state.files.map(function (file) {
+        return renderFileRow(file, c);
+      }).join("") +
+      "</div>" +
+      '<div class="wf-up__files-footer">' +
+      renderActionButton(c.addMoreText, c, "sm", "upload") +
+      (state.files.length
+        ? renderActionButton(c.removeAllText, c, "sm", "trash", "remove-all")
+        : "") +
+      "</div>" +
+      "</div>"
+    );
+  }
+
+  function renderFileCardList(state) {
+    var c = state.config;
+
+    return (
+      '<div class="wf-up__file-list wf-up__file-list--single">' +
+      state.files.map(function (file) {
+        return renderFileRow(file, c);
+      }).join("") +
+      "</div>"
+    );
+  }
+
+  function renderImageGridItem(file, c) {
+    return (
+      '<div class="wf-up__image-grid-item">' +
+      (file.previewUrl
+        ? '<img src="' +
+          escapeAttr(file.previewUrl) +
+          '" alt="' +
+          escapeAttr(file.name) +
+          '">'
+        : renderIcon("image", c)) +
+      renderFloatingRemoveButton(file, c) +
+      "</div>"
+    );
+  }
+
+  function renderImageListRow(file, c) {
+    return (
+      '<div class="wf-up__image-row">' +
+      '<div class="wf-up__image-thumb">' +
+      (file.previewUrl
+        ? '<img src="' +
+          escapeAttr(file.previewUrl) +
+          '" alt="' +
+          escapeAttr(file.name) +
+          '">'
+        : renderIcon("image", c)) +
+      "</div>" +
+      '<div class="wf-up__file-info">' +
+      '<div class="wf-up__file-name">' +
+      escapeHtml(file.name) +
+      "</div>" +
+      '<div class="wf-up__file-meta">' +
+      formatBytes(file.size) +
+      "</div>" +
+      "</div>" +
+      renderRemoveButton(file, c) +
       "</div>"
     );
   }
 
   function renderFileRow(file, c) {
     return (
-      '<div class="wf-up__file">' +
-      '<div class="wf-up__file-icon">' +
-      renderIcon("file", c) +
+      '<div class="wf-up__file-row">' +
+      '<div class="wf-up__file-icon" aria-hidden="true">' +
+      renderIcon(iconForFile(file), c) +
       "</div>" +
       '<div class="wf-up__file-info">' +
       '<div class="wf-up__file-name">' +
@@ -1210,84 +1340,10 @@
     );
   }
 
-  function renderImageRows(state) {
-    if (!state.files.length) {
-      return renderEmptyState(state.config.emptyText);
-    }
-
-    return (
-      '<div class="wf-up__image-list">' +
-      state.files
-        .map(function (file) {
-          return (
-            '<div class="wf-up__image-row">' +
-            '<div class="wf-up__image-thumb">' +
-            (file.previewUrl
-              ? '<img src="' +
-                escapeAttr(file.previewUrl) +
-                '" alt="' +
-                escapeAttr(file.name) +
-                '">'
-              : renderIcon("image", state.config)) +
-            "</div>" +
-            '<div class="wf-up__file-info">' +
-            '<div class="wf-up__file-name">' +
-            escapeHtml(file.name) +
-            "</div>" +
-            '<div class="wf-up__file-meta">' +
-            formatBytes(file.size) +
-            "</div>" +
-            "</div>" +
-            '<div class="wf-up__file-status">' +
-            renderStatus(file, state.config) +
-            "</div>" +
-            renderRemoveButton(file, state.config) +
-            "</div>"
-          );
-        })
-        .join("") +
-      "</div>"
-    );
-  }
-
-  function renderImagePreviewArea(state) {
-    if (!state.files.length) return "";
-
-    return (
-      '<div class="wf-up__image-preview-row">' +
-      state.files
-        .map(function (file) {
-          return renderImageTile(file, state.config);
-        })
-        .join("") +
-      "</div>"
-    );
-  }
-
-  function renderImageTile(file, c) {
-    return (
-      '<div class="wf-up__image-tile">' +
-      (file.previewUrl
-        ? '<img src="' +
-          escapeAttr(file.previewUrl) +
-          '" alt="' +
-          escapeAttr(file.name) +
-          '">'
-        : renderIcon("image", c)) +
-      '<div class="wf-up__image-tile-overlay">' +
-      "<span>" +
-      renderStatus(file, c) +
-      "</span>" +
-      renderRemoveButton(file, c) +
-      "</div>" +
-      "</div>"
-    );
-  }
-
   function renderSingleFileSummary(file, c) {
     return (
       '<div class="wf-up__single-summary">' +
-      "<div>" +
+      '<div class="wf-up__file-info">' +
       '<div class="wf-up__file-name">' +
       escapeHtml(file.name) +
       "</div>" +
@@ -1303,11 +1359,24 @@
     );
   }
 
+  function renderSingleImagePreview(file, c) {
+    return (
+      '<div class="wf-up__single-image-preview">' +
+      '<img src="' +
+      escapeAttr(file.previewUrl) +
+      '" alt="' +
+      escapeAttr(file.name) +
+      '">' +
+      renderFloatingRemoveButton(file, c) +
+      "</div>"
+    );
+  }
+
   function renderProgressRow(file, c) {
     return (
       '<div class="wf-up__progress-row">' +
-      '<div class="wf-up__file-icon">' +
-      renderIcon(isImageType(file.type) ? "image" : "file", c) +
+      '<div class="wf-up__file-icon" aria-hidden="true">' +
+      renderIcon(iconForFile(file), c) +
       "</div>" +
       '<div class="wf-up__progress-body">' +
       '<div class="wf-up__progress-head">' +
@@ -1332,40 +1401,39 @@
     );
   }
 
-  function renderFooterActions(state) {
-    var c = state.config;
-
-    if (!state.files.length) return "";
-
+  function renderTableRow(file, c) {
     return (
-      '<div class="wf-up__footer">' +
-      '<button class="wf-up__link-button" data-wf-up-action="open">' +
-      escapeHtml(c.addMoreText) +
-      "</button>" +
-      '<button class="wf-up__link-button is-danger" data-wf-up-action="remove-all">' +
-      escapeHtml(c.removeAllText) +
-      "</button>" +
-      "</div>"
+      "<tr>" +
+      '<td class="wf-up__table-cell wf-up__table-cell--name">' +
+      '<div class="wf-up__table-file">' +
+      '<span class="wf-up__table-file-icon">' +
+      renderIcon(iconForFile(file), c) +
+      "</span>" +
+      '<span class="wf-up__table-file-name">' +
+      escapeHtml(file.name) +
+      "</span>" +
+      "</div>" +
+      "</td>" +
+      '<td class="wf-up__table-cell">' +
+      escapeHtml(getFileExtension(file.name)) +
+      "</td>" +
+      '<td class="wf-up__table-cell">' +
+      formatBytes(file.size) +
+      "</td>" +
+      '<td class="wf-up__table-cell wf-up__table-cell--actions">' +
+      renderRemoveButton(file, c, "table") +
+      "</td>" +
+      "</tr>"
     );
-  }
-
-  function renderStatus(file, c) {
-    if (file.status === "pending") return "Waiting";
-    if (file.status === "signing") return "Preparing";
-    if (file.status === "uploading") {
-      return escapeHtml(c.uploadingText) + " " + (file.progress || 0) + "%";
-    }
-    if (file.status === "uploaded") return escapeHtml(c.successText);
-    if (file.status === "error") return escapeHtml(file.error || c.errorText);
-
-    return "";
   }
 
   function renderRemoveButton(file, c, style) {
     if (!c.allowRemove) return "";
 
     var className =
-      style === "secondary" ? "wf-up__secondary-button" : "wf-up__remove-button";
+      style === "table"
+        ? "wf-up__icon-button wf-up__icon-button--table"
+        : "wf-up__icon-button";
 
     return (
       '<button class="' +
@@ -1373,9 +1441,23 @@
       '" data-wf-up-action="remove" data-wf-up-id="' +
       escapeAttr(file.id) +
       '" aria-label="' +
-      escapeAttr(c.removeText) +
+      escapeAttr(c.removeText + " " + file.name) +
       '">' +
-      (c.iconRemove ? renderIcon("remove", c) : "×") +
+      renderIcon(c.iconRemove ? "remove-custom" : "x", c) +
+      "</button>"
+    );
+  }
+
+  function renderFloatingRemoveButton(file, c) {
+    if (!c.allowRemove) return "";
+
+    return (
+      '<button class="wf-up__floating-remove" data-wf-up-action="remove" data-wf-up-id="' +
+      escapeAttr(file.id) +
+      '" aria-label="' +
+      escapeAttr(c.removeText + " image") +
+      '">' +
+      renderIcon(c.iconRemove ? "remove-custom" : "x", c) +
       "</button>"
     );
   }
@@ -1390,14 +1472,38 @@
     return '<div class="wf-up__empty">' + escapeHtml(text) + "</div>";
   }
 
+  function renderStatus(file, c) {
+    if (file.status === "pending") return escapeHtml(c.waitingText);
+    if (file.status === "signing") return escapeHtml(c.preparingText);
+    if (file.status === "uploading") {
+      return escapeHtml(c.uploadingText) + " " + (file.progress || 0) + "%";
+    }
+    if (file.status === "uploaded") return escapeHtml(c.successText);
+    if (file.status === "error") return escapeHtml(file.error || c.errorText);
+
+    return "";
+  }
+
+  function iconForFile(file) {
+    if (isImageType(file.type)) return "image";
+    var ext = getFileExtension(file.name).toLowerCase();
+
+    if (ext === "zip" || ext === "rar" || ext === "7z") return "archive";
+    if (ext === "mp3" || ext === "wav" || ext === "m4a") return "audio";
+    if (ext === "pdf") return "file";
+    if (ext === "xlsx" || ext === "xls" || ext === "csv") return "file";
+
+    return "file";
+  }
+
   function renderIcon(type, c) {
     var url = "";
 
     if (type === "upload") {
       url = c.iconUpload;
-    } else if (type === "image") {
+    } else if (type === "image" || type === "image-up") {
       url = c.iconImage;
-    } else if (type === "remove") {
+    } else if (type === "remove-custom") {
       url = c.iconRemove;
     } else {
       url = c.iconFile;
@@ -1407,20 +1513,75 @@
       return '<img class="wf-up__custom-icon" src="' + escapeAttr(url) + '" alt="">';
     }
 
-    if (type === "image") {
+    if (type === "avatar") {
       return (
         '<svg viewBox="0 0 24 24" aria-hidden="true">' +
-        '<path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v13A2.5 2.5 0 0 1 17.5 21h-11A2.5 2.5 0 0 1 4 18.5v-13Z" fill="none" stroke="currentColor" stroke-width="1.8"/>' +
-        '<path d="M8 15l2.2-2.2a1 1 0 0 1 1.4 0L14 15.2l1.2-1.2a1 1 0 0 1 1.4 0L20 17.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>' +
-        '<circle cx="8.5" cy="8.5" r="1.4" fill="currentColor"/>' +
+        '<path d="M18 20a6 6 0 0 0-12 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' +
+        '<circle cx="12" cy="10" r="4" fill="none" stroke="currentColor" stroke-width="2"/>' +
+        '<circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>' +
         "</svg>"
       );
     }
 
-    if (type === "remove") {
+    if (type === "image-up") {
       return (
         '<svg viewBox="0 0 24 24" aria-hidden="true">' +
-        '<path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' +
+        '<path d="M10.3 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10l-3.1-3.1a2 2 0 0 0-2.814.014L6 21" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+        '<path d="m14 19.5 3-3 3 3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+        '<path d="M17 22v-5.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' +
+        '<circle cx="9" cy="9" r="2" fill="none" stroke="currentColor" stroke-width="2"/>' +
+        "</svg>"
+      );
+    }
+
+    if (type === "image") {
+      return (
+        '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+        '<rect width="18" height="18" x="3" y="3" rx="2" ry="2" fill="none" stroke="currentColor" stroke-width="2"/>' +
+        '<circle cx="9" cy="9" r="2" fill="none" stroke="currentColor" stroke-width="2"/>' +
+        '<path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+        "</svg>"
+      );
+    }
+
+    if (type === "x") {
+      return (
+        '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+        '<path d="M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' +
+        '<path d="m6 6 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' +
+        "</svg>"
+      );
+    }
+
+    if (type === "trash") {
+      return (
+        '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+        '<path d="M10 11v6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' +
+        '<path d="M14 11v6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' +
+        '<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+        '<path d="M3 6h18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' +
+        '<path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+        "</svg>"
+      );
+    }
+
+    if (type === "archive") {
+      return (
+        '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+        '<path d="M10 12v-1M10 18v-2M10 7V6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' +
+        '<path d="M14 2v4a2 2 0 0 0 2 2h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+        '<path d="M15.5 22H18a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v18h2.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+        '<path d="M10 22a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z" fill="none" stroke="currentColor" stroke-width="2"/>' +
+        "</svg>"
+      );
+    }
+
+    if (type === "audio") {
+      return (
+        '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+        '<path d="M9 18V5l12-2v13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+        '<circle cx="6" cy="18" r="3" fill="none" stroke="currentColor" stroke-width="2"/>' +
+        '<circle cx="18" cy="16" r="3" fill="none" stroke="currentColor" stroke-width="2"/>' +
         "</svg>"
       );
     }
@@ -1428,17 +1589,17 @@
     if (type === "file") {
       return (
         '<svg viewBox="0 0 24 24" aria-hidden="true">' +
-        '<path d="M7 3h7l5 5v13H7V3Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>' +
-        '<path d="M14 3v5h5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>' +
+        '<path d="M7 3h7l5 5v13H7V3Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>' +
+        '<path d="M14 3v5h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>' +
         "</svg>"
       );
     }
 
     return (
       '<svg viewBox="0 0 24 24" aria-hidden="true">' +
-      '<path d="M12 13v8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' +
-      '<path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
-      '<path d="m8 17 4-4 4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '<path d="M12 3v12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' +
+      '<path d="m17 8-5-5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
       "</svg>"
     );
   }
@@ -1504,10 +1665,9 @@
   }
 
   function formatBytes(bytes) {
-    if (!bytes) return "0 B";
+    if (!bytes) return "0B";
 
     var units = ["B", "KB", "MB", "GB"];
-
     var index = Math.min(
       Math.floor(Math.log(bytes) / Math.log(1024)),
       units.length - 1
