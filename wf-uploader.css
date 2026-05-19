@@ -1,5 +1,5 @@
 /* WebFolks File Uploader
-   Coss-style preset for the rebuilt JS structure.
+   Coss-style preset for rebuilt JS structure.
    Webflow wrapper controls: width, max-width, background, outer padding, outer border, radius.
 */
 
@@ -236,7 +236,7 @@
 }
 
 .wf-up__drop-area--compact {
-  min-height: 120px;
+  min-height: 128px;
   flex-direction: column;
   align-items: center;
   justify-content: center;
@@ -261,6 +261,7 @@
 .wf-up__drop-content--compact {
   width: 100%;
   padding: 0;
+  gap: 6px;
 }
 
 .wf-up__drop-icon {
@@ -311,8 +312,12 @@
   line-height: 16px;
 }
 
-.wf-up__button--drop {
+.wf-up__drop-content .wf-up__button {
   margin-top: 16px;
+}
+
+.wf-up__drop-content .wf-up__button:first-child {
+  margin-top: 0;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -486,7 +491,7 @@
   display: flex;
   width: 100%;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
 }
 
 .wf-up__files-panel,
@@ -494,14 +499,14 @@
   display: flex;
   width: 100%;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
 }
 
 .wf-up__files-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 16px;
   width: 100%;
 }
 
@@ -530,6 +535,17 @@
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
+}
+
+.wf-up__drop-content--compact + .wf-up__image-list,
+.wf-up__drop-content--compact + .wf-up__file-list {
+  margin-top: 8px;
+}
+
+.wf-up__image-list + .wf-up__files-footer,
+.wf-up__file-list + .wf-up__files-footer,
+.wf-up__progress-list + .wf-up__files-footer {
+  margin-top: 4px;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -583,7 +599,7 @@
   display: flex;
   width: 100%;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
 }
 
 .wf-up__image-row,
@@ -595,6 +611,7 @@
   gap: 12px;
   width: 100%;
   min-width: 0;
+  min-height: 48px;
 }
 
 .wf-up__image-thumb {
@@ -672,6 +689,12 @@
   white-space: nowrap;
 }
 
+/* In card/list components, rows should feel like separate items */
+.wf-up--file-list-inside .wf-up__file-row,
+.wf-up--progress-list .wf-up__progress-row {
+  padding: 8px 0;
+}
+
 /* -------------------------------------------------------------------------- */
 /* Image preview                                                               */
 /* -------------------------------------------------------------------------- */
@@ -741,7 +764,7 @@
   z-index: 2;
   width: 24px;
   height: 24px;
-  border: 2px solid var(--wf-up-surface, #ffffff);
+  border: 2px solid #ffffff;
   border-radius: 999px;
   background: var(--wf-up-primary-bg);
   color: var(--wf-up-primary-fg);
@@ -765,27 +788,33 @@
 /* Table                                                                       */
 /* -------------------------------------------------------------------------- */
 
+.wf-up__table-card {
+  width: 100%;
+}
+
 .wf-up__table-wrap {
   width: 100%;
   overflow-x: auto;
+  border: 1px solid var(--wf-up-border);
+  border-radius: var(--wf-up-radius);
 }
 
 .wf-up__table {
   width: 100%;
-  min-width: 520px;
+  min-width: 560px;
   border-collapse: collapse;
   font: inherit;
 }
 
 .wf-up__table th,
 .wf-up__table td {
-  padding: 10px 8px;
+  padding: 12px;
   border-bottom: 1px solid var(--wf-up-border);
-  text-align: left;
-  vertical-align: middle;
   color: var(--wf-up-fg);
   font-size: 14px;
   line-height: 20px;
+  text-align: left;
+  vertical-align: middle;
 }
 
 .wf-up__table th {
@@ -795,7 +824,7 @@
   line-height: 16px;
 }
 
-.wf-up__table tr:last-child td {
+.wf-up__table tbody tr:last-child td {
   border-bottom: 0;
 }
 
@@ -806,6 +835,22 @@
   min-width: 0;
 }
 
+.wf-up__table-file-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  color: var(--wf-up-muted);
+}
+
+.wf-up__table-file-icon svg {
+  width: 16px;
+  height: 16px;
+  opacity: 0.6;
+}
+
 .wf-up__table-file-name {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -814,10 +859,16 @@
 
 .wf-up__table-cell--actions {
   width: 1%;
+  text-align: right;
   white-space: nowrap;
 }
 
+.wf-up__table-cell--actions .wf-up__icon-button {
+  margin-left: auto;
+}
+
 .wf-up__table-empty {
+  padding: 24px 12px !important;
   color: var(--wf-up-muted) !important;
   text-align: center !important;
 }
@@ -883,12 +934,6 @@
   min-height: 128px;
 }
 
-.wf-up--file-list-inside .wf-up__files-panel,
-.wf-up--progress-list .wf-up__files-panel,
-.wf-up--file-table .wf-up__table-card {
-  gap: 12px;
-}
-
 .wf-up--image-single .wf-up__single-summary {
   margin-top: 4px;
 }
@@ -898,19 +943,17 @@
 /* -------------------------------------------------------------------------- */
 
 @media (max-width: 479px) {
-  .wf-up__files-header,
-  .wf-up__actions,
-  .wf-up__files-footer {
-    align-items: stretch;
-  }
-
   .wf-up__files-header {
     flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
   }
 
   .wf-up__actions,
   .wf-up__files-footer {
     width: 100%;
+    align-items: stretch;
+    gap: 8px;
   }
 
   .wf-up__button {
@@ -939,5 +982,9 @@
 
   .wf-up__file-status {
     white-space: normal;
+  }
+
+  .wf-up__table {
+    min-width: 520px;
   }
 }
