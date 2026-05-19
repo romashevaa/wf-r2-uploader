@@ -665,3 +665,21 @@
     height: 88px;
   }
 }
+
+/* -------------------------------------------------------------------------- */
+/* Webflow embed clearfix fix                                                  */
+/* -------------------------------------------------------------------------- */
+
+.w-embed:has(> .wf-up)::before,
+.w-embed:has(> .wf-up)::after,
+.upload.w-embed::before,
+.upload.w-embed::after,
+.wf-up::before,
+.wf-up::after,
+.wf-up__view::before,
+.wf-up__view::after,
+.wf-up__panel::before,
+.wf-up__panel::after {
+  content: none !important;
+  display: none !important;
+}
