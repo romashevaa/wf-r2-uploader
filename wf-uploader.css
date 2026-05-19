@@ -1,45 +1,7 @@
-:root {
-  --wf-up-primary: currentColor;
-
-  --wf-up-fg-strong: currentColor;
-  --wf-up-fg-medium: currentColor;
-  --wf-up-fg-weak: currentColor;
-
-  --wf-up-bg: transparent;
-  --wf-up-surface-bg: transparent;
-  --wf-up-zone-bg: transparent;
-  --wf-up-item-bg: transparent;
-  --wf-up-preview-bg: transparent;
-  --wf-up-hover: transparent;
-
-  --wf-up-border: transparent;
-  --wf-up-border-width: 0;
-  --wf-up-border-style: solid;
-
-  --wf-up-zone-border: transparent;
-  --wf-up-zone-border-width: 0;
-  --wf-up-zone-border-style: solid;
-
-  --wf-up-error: currentColor;
-  --wf-up-success: currentColor;
-
-  --wf-up-radius: 0;
-  --wf-up-radius-sm: 0;
-  --wf-up-padding: 0;
-  --wf-up-padding-mobile: var(--wf-up-padding);
-  --wf-up-gap: 12px;
-
-  --wf-up-image-min: 120px;
-  --wf-up-avatar-size: 96px;
-  --wf-up-avatar-size-mobile: 88px;
-
-  --wf-up-button-radius: 0;
-  --wf-up-shadow: none;
-
-  --wf-up-progress-height: 8px;
-  --wf-up-progress-bg: rgba(0, 0, 0, 0.08);
-  --wf-up-progress-fill: currentColor;
-}
+/* WebFolks File Uploader
+   Preset visual theme inspired by the reference components.
+   Outer width, max-width, background, and font should be controlled by Webflow wrapper/embed.
+*/
 
 /* -------------------------------------------------------------------------- */
 /* Base                                                                        */
@@ -54,8 +16,12 @@
   display: block;
   width: 100%;
   max-width: 100%;
-  color: var(--wf-up-fg-strong);
+  color: inherit;
   font: inherit;
+  letter-spacing: inherit;
+  line-height: inherit;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .wf-up button,
@@ -71,8 +37,9 @@
 
 .wf-up svg {
   display: block;
-  width: 22px;
-  height: 22px;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
 }
 
 .wf-up__view {
@@ -82,13 +49,13 @@
 
 .wf-up__custom-icon {
   display: block;
-  width: 22px;
-  height: 22px;
+  width: 16px;
+  height: 16px;
   object-fit: contain;
 }
 
 /* -------------------------------------------------------------------------- */
-/* Main layout                                                                 */
+/* Main surfaces                                                               */
 /* -------------------------------------------------------------------------- */
 
 .wf-up__panel,
@@ -96,36 +63,41 @@
 .wf-up__image-single,
 .wf-up__avatar-wrap,
 .wf-up__minimal {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: var(--wf-up-gap);
+  gap: 16px;
   width: 100%;
   max-width: 100%;
-  padding: var(--wf-up-padding);
-  background: var(--wf-up-surface-bg);
-  border: var(--wf-up-border-width) var(--wf-up-border-style) var(--wf-up-border);
-  border-radius: var(--wf-up-radius);
-  box-shadow: var(--wf-up-shadow);
+  padding: 48px;
+  background: transparent;
+  border: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+  border-radius: 0;
 }
 
 .wf-up__avatar-wrap {
   display: grid;
   grid-template-columns: auto 1fr;
   align-items: center;
+  gap: 20px;
 }
 
 .wf-up__minimal {
   align-items: flex-start;
+  gap: 12px;
 }
 
 /* -------------------------------------------------------------------------- */
-/* Text                                                                         */
+/* Text                                                                        */
 /* -------------------------------------------------------------------------- */
 
 .wf-up__title {
-  color: var(--wf-up-fg-strong);
-  font-weight: inherit;
-  line-height: inherit;
+  margin: 0;
+  color: inherit;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+  letter-spacing: inherit;
 }
 
 .wf-up__description,
@@ -133,17 +105,20 @@
 .wf-up__file-meta,
 .wf-up__empty,
 .wf-up__minimal-meta {
-  color: var(--wf-up-fg-medium);
-  font-size: inherit;
-  line-height: inherit;
+  margin: 0;
+  color: color-mix(in srgb, currentColor 62%, transparent);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  letter-spacing: inherit;
 }
 
 .wf-up__helper {
-  color: var(--wf-up-fg-weak);
+  color: color-mix(in srgb, currentColor 48%, transparent);
 }
 
 /* -------------------------------------------------------------------------- */
-/* Dropzones                                                                    */
+/* Dropzones                                                                   */
 /* -------------------------------------------------------------------------- */
 
 .wf-up__dropzone,
@@ -151,19 +126,23 @@
 .wf-up__image-single-empty {
   width: 100%;
   max-width: 100%;
-  background: var(--wf-up-zone-bg);
-  border: var(--wf-up-zone-border-width) var(--wf-up-zone-border-style)
-    var(--wf-up-zone-border);
-  border-radius: var(--wf-up-radius);
+  background: transparent;
+  border: 1px dashed color-mix(in srgb, currentColor 18%, transparent);
+  border-radius: 8px;
   cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease;
 }
 
 .wf-up__dropzone {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--wf-up-gap);
-  padding: var(--wf-up-padding);
+  justify-content: center;
+  gap: 8px;
+  min-height: 160px;
+  padding: 32px;
   text-align: center;
 }
 
@@ -171,14 +150,16 @@
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
-  gap: var(--wf-up-gap);
-  padding: var(--wf-up-padding);
+  gap: 12px;
+  min-height: 68px;
+  padding: 16px;
 }
 
 .wf-up.is-dragging .wf-up__dropzone,
 .wf-up.is-dragging .wf-up__compact-dropzone,
 .wf-up.is-dragging .wf-up__image-single-empty {
-  background: var(--wf-up-hover);
+  border-color: currentColor;
+  background: color-mix(in srgb, currentColor 4%, transparent);
 }
 
 .wf-up__dropzone-icon,
@@ -187,16 +168,29 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--wf-up-primary);
+  color: color-mix(in srgb, currentColor 72%, transparent);
 }
 
-.wf-up__dropzone-icon {
-  width: 44px;
-  height: 44px;
+.wf-up__dropzone-icon,
+.wf-up__compact-icon,
+.wf-up__card-icon,
+.wf-up__file-icon {
+  width: 36px;
+  height: 36px;
+  flex: 0 0 auto;
+  border: 1px solid color-mix(in srgb, currentColor 16%, transparent);
+  border-radius: 8px;
+}
+
+.wf-up__dropzone-icon svg,
+.wf-up__compact-icon svg,
+.wf-up__card-icon svg,
+.wf-up__file-icon svg {
+  opacity: 0.72;
 }
 
 /* -------------------------------------------------------------------------- */
-/* Buttons                                                                      */
+/* Buttons                                                                     */
 /* -------------------------------------------------------------------------- */
 
 .wf-up__button,
@@ -207,7 +201,6 @@
 .wf-up__avatar {
   appearance: none;
   cursor: pointer;
-  font: inherit;
 }
 
 .wf-up__button,
@@ -217,24 +210,66 @@
   justify-content: center;
   gap: 8px;
   width: fit-content;
-  min-height: 40px;
-  padding: 0;
+  min-height: 36px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  letter-spacing: inherit;
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    color 0.15s ease,
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    opacity 0.15s ease;
+}
+
+.wf-up__button {
   border: 0;
-  border-radius: var(--wf-up-button-radius);
+  background: #ffffff;
+  color: #111111;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.1),
+    0 1px 2px -1px rgba(0, 0, 0, 0.1);
+}
+
+.wf-up__button:hover {
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.12),
+    0 1px 2px -1px rgba(0, 0, 0, 0.12);
+}
+
+.wf-up__secondary-button {
+  border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
   background: transparent;
   color: inherit;
-  text-decoration: none;
+  box-shadow: none;
+}
+
+.wf-up__secondary-button:hover {
+  background: color-mix(in srgb, currentColor 5%, transparent);
 }
 
 .wf-up__link-button {
   padding: 0;
   border: 0;
   background: transparent;
+  color: color-mix(in srgb, currentColor 72%, transparent);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.wf-up__link-button:hover {
   color: inherit;
 }
 
 .wf-up__link-button.is-danger {
-  color: var(--wf-up-error);
+  color: #ef4444;
 }
 
 .wf-up[data-wf-up-button-full="true"] .wf-up__button,
@@ -243,7 +278,7 @@
 }
 
 /* -------------------------------------------------------------------------- */
-/* Header / actions                                                             */
+/* Headers / actions                                                           */
 /* -------------------------------------------------------------------------- */
 
 .wf-up__header,
@@ -253,7 +288,12 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--wf-up-gap);
+  gap: 12px;
+}
+
+.wf-up__header > div,
+.wf-up__inside-head > div {
+  min-width: 0;
 }
 
 .wf-up__actions,
@@ -261,8 +301,12 @@
   flex-wrap: wrap;
 }
 
+.wf-up__footer {
+  padding-top: 2px;
+}
+
 /* -------------------------------------------------------------------------- */
-/* Lists / rows                                                                 */
+/* Lists / rows                                                                */
 /* -------------------------------------------------------------------------- */
 
 .wf-up__file-list,
@@ -281,7 +325,7 @@
 .wf-up__progress-list {
   display: flex;
   flex-direction: column;
-  gap: var(--wf-up-gap);
+  gap: 8px;
 }
 
 .wf-up__file,
@@ -290,24 +334,22 @@
 .wf-up__single-summary {
   display: flex;
   align-items: center;
-  gap: var(--wf-up-gap);
+  gap: 12px;
   width: 100%;
   max-width: 100%;
   min-width: 0;
-  padding: 0;
-  background: var(--wf-up-item-bg);
-  border: 0;
-  border-radius: 0;
+  min-height: 60px;
+  padding: 12px;
+  background: transparent;
+  border: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+  border-radius: 8px;
 }
 
 .wf-up__file-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  flex: 0 0 auto;
-  width: 36px;
-  height: 36px;
-  color: inherit;
+  color: color-mix(in srgb, currentColor 72%, transparent);
 }
 
 .wf-up__file-info,
@@ -318,14 +360,20 @@
 
 .wf-up__file-name {
   overflow: hidden;
-  color: var(--wf-up-fg-strong);
+  color: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .wf-up__file-status {
   flex: 0 0 auto;
-  color: var(--wf-up-fg-medium);
+  color: color-mix(in srgb, currentColor 56%, transparent);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 18px;
   white-space: nowrap;
 }
 
@@ -338,47 +386,58 @@
   height: 28px;
   padding: 0;
   border: 0;
+  border-radius: 8px;
   background: transparent;
-  color: inherit;
+  color: color-mix(in srgb, currentColor 56%, transparent);
+  font-size: 20px;
   line-height: 1;
+  transition:
+    color 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.wf-up__remove-button:hover {
+  background: color-mix(in srgb, currentColor 6%, transparent);
+  color: #ef4444;
 }
 
 .wf-up__error {
   width: 100%;
-  color: var(--wf-up-error);
+  color: #ef4444;
+  font-size: 14px;
+  line-height: 20px;
 }
 
 .wf-up__empty {
   width: 100%;
-  padding: 0;
-  background: transparent;
-  border: 0;
+  min-height: 48px;
+  padding: 14px;
+  border: 1px dashed color-mix(in srgb, currentColor 14%, transparent);
+  border-radius: 8px;
   text-align: center;
 }
 
 /* -------------------------------------------------------------------------- */
-/* Inside list                                                                  */
+/* File list inside                                                            */
 /* -------------------------------------------------------------------------- */
 
 .wf-up__inside {
   display: flex;
   flex-direction: column;
-  gap: var(--wf-up-gap);
-  padding: 0;
-  background: transparent;
-  border: 0;
-  border-radius: 0;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+  border-radius: 8px;
 }
 
 /* -------------------------------------------------------------------------- */
-/* Table                                                                        */
+/* File table                                                                  */
 /* -------------------------------------------------------------------------- */
 
 .wf-up__table-wrap {
   overflow-x: auto;
-  background: transparent;
-  border: 0;
-  border-radius: 0;
+  border: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+  border-radius: 8px;
 }
 
 .wf-up__table {
@@ -386,33 +445,36 @@
   min-width: 640px;
   border-collapse: collapse;
   font: inherit;
+  font-size: 14px;
+  line-height: 20px;
 }
 
 .wf-up__table th,
 .wf-up__table td {
-  padding: 0;
-  border: 0;
+  padding: 12px;
+  border-bottom: 1px solid color-mix(in srgb, currentColor 10%, transparent);
   text-align: left;
   vertical-align: middle;
 }
 
 .wf-up__table th {
-  color: var(--wf-up-fg-medium);
-  font-weight: inherit;
+  color: color-mix(in srgb, currentColor 58%, transparent);
+  font-weight: 500;
+}
+
+.wf-up__table tr:last-child td {
+  border-bottom: 0;
 }
 
 /* -------------------------------------------------------------------------- */
-/* Images                                                                       */
+/* Image variants                                                              */
 /* -------------------------------------------------------------------------- */
 
 .wf-up__image-preview-row,
 .wf-up__image-grid {
   display: grid;
-  grid-template-columns: repeat(
-    auto-fill,
-    minmax(var(--wf-up-image-min), 1fr)
-  );
-  gap: var(--wf-up-gap);
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 12px;
 }
 
 .wf-up__image-tile,
@@ -422,9 +484,9 @@
   position: relative;
   overflow: hidden;
   min-height: 140px;
-  background: var(--wf-up-preview-bg);
-  border: 0;
-  border-radius: 0;
+  background: color-mix(in srgb, currentColor 4%, transparent);
+  border: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+  border-radius: 8px;
 }
 
 .wf-up__image-tile img,
@@ -439,16 +501,24 @@
 
 .wf-up__image-tile-overlay {
   position: absolute;
-  right: 0;
-  bottom: 0;
-  left: 0;
+  right: 8px;
+  bottom: 8px;
+  left: 8px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--wf-up-gap);
-  padding: 0;
-  background: transparent;
-  color: inherit;
+  gap: 8px;
+  min-height: 32px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: color-mix(in srgb, black 48%, transparent);
+  color: #ffffff;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.wf-up__image-tile-overlay .wf-up__remove-button {
+  color: #ffffff;
 }
 
 .wf-up__image-add,
@@ -457,10 +527,11 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: var(--wf-up-gap);
-  padding: 0;
-  color: inherit;
+  gap: 9px;
+  padding: 24px;
+  color: color-mix(in srgb, currentColor 70%, transparent);
   text-align: center;
+  border-style: dashed;
 }
 
 .wf-up__image-thumb {
@@ -468,11 +539,13 @@
   flex: 0 0 auto;
   width: 48px;
   height: 48px;
-  background: var(--wf-up-preview-bg);
+  border: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, currentColor 4%, transparent);
 }
 
 /* -------------------------------------------------------------------------- */
-/* Avatar                                                                       */
+/* Avatar                                                                      */
 /* -------------------------------------------------------------------------- */
 
 .wf-up__avatar {
@@ -480,24 +553,32 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: var(--wf-up-avatar-size);
-  height: var(--wf-up-avatar-size);
+  width: 96px;
+  height: 96px;
   padding: 0;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  color: inherit;
+  border: 1px dashed color-mix(in srgb, currentColor 18%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, currentColor 4%, transparent);
+  color: color-mix(in srgb, currentColor 72%, transparent);
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.wf-up__avatar:hover {
+  border-color: currentColor;
+  background: color-mix(in srgb, currentColor 6%, transparent);
 }
 
 .wf-up__avatar-content {
   display: flex;
   flex-direction: column;
-  gap: var(--wf-up-gap);
+  gap: 8px;
   min-width: 0;
 }
 
 /* -------------------------------------------------------------------------- */
-/* Progress                                                                     */
+/* Progress                                                                    */
 /* -------------------------------------------------------------------------- */
 
 .wf-up__progress-head,
@@ -505,26 +586,62 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--wf-up-gap);
+  gap: 8px;
 }
 
 .wf-up__progress-track {
   overflow: hidden;
   width: 100%;
-  height: var(--wf-up-progress-height);
-  margin: 0;
-  background: var(--wf-up-progress-bg);
+  height: 8px;
+  margin: 8px 0;
+  border-radius: 999px;
+  background: color-mix(in srgb, currentColor 10%, transparent);
 }
 
 .wf-up__progress-fill {
   height: 100%;
-  background: var(--wf-up-progress-fill);
+  border-radius: inherit;
+  background: currentColor;
   transition: width 0.2s ease;
 }
 
 /* -------------------------------------------------------------------------- */
-/* Responsive                                                                   */
+/* Variant-specific small adjustments                                          */
 /* -------------------------------------------------------------------------- */
+
+.wf-up--file-card .wf-up__card {
+  align-items: flex-start;
+}
+
+.wf-up--file-card .wf-up__card-icon {
+  margin-bottom: 2px;
+}
+
+.wf-up--image-single .wf-up__image-single {
+  gap: 12px;
+}
+
+.wf-up--image-single .wf-up__image-single-preview {
+  min-height: 260px;
+}
+
+.wf-up--minimal .wf-up__file-list {
+  margin-top: 2px;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Responsive                                                                  */
+/* -------------------------------------------------------------------------- */
+
+@media (max-width: 767px) {
+  .wf-up__panel,
+  .wf-up__card,
+  .wf-up__image-single,
+  .wf-up__avatar-wrap,
+  .wf-up__minimal {
+    padding: 32px;
+  }
+}
 
 @media (max-width: 479px) {
   .wf-up__panel,
@@ -532,7 +649,7 @@
   .wf-up__image-single,
   .wf-up__avatar-wrap,
   .wf-up__minimal {
-    padding: var(--wf-up-padding-mobile);
+    padding: 24px;
   }
 
   .wf-up__header,
@@ -561,7 +678,7 @@
   }
 
   .wf-up__avatar {
-    width: var(--wf-up-avatar-size-mobile);
-    height: var(--wf-up-avatar-size-mobile);
+    width: 88px;
+    height: 88px;
   }
 }
