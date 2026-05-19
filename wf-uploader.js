@@ -24,8 +24,6 @@
     minimal: {
       title: "Basic image uploader",
       buttonText: "Upload image",
-      caption: "Basic image uploader",
-      captionLinkText: "Docs",
       accept: "image/*",
       maxFiles: 1,
       multiple: false,
@@ -35,8 +33,6 @@
     avatar: {
       title: "Avatar uploader with droppable area",
       buttonText: "Upload image",
-      caption: "Avatar uploader with droppable area",
-      captionLinkText: "API",
       accept: "image/*",
       maxFiles: 1,
       multiple: false,
@@ -48,8 +44,6 @@
       description: "SVG, PNG, JPG or GIF (max. 2MB)",
       helperText: "",
       buttonText: "Select image",
-      caption: "Single image uploader w/ max size (drop area + button)",
-      captionLinkText: "API",
       accept: "image/svg+xml,image/png,image/jpeg,image/jpg,image/gif",
       maxSizeMb: 2,
       maxFiles: 1,
@@ -64,8 +58,6 @@
       buttonText: "Select images",
       addMoreText: "Add more",
       removeAllText: "Remove all files",
-      caption: "Multiple image uploader w/ image list",
-      captionLinkText: "API",
       accept: "image/svg+xml,image/png,image/jpeg,image/jpg,image/gif",
       maxSizeMb: 5,
       maxFiles: 10,
@@ -79,8 +71,6 @@
       buttonText: "Add more",
       addMoreText: "Add more",
       removeAllText: "Remove all files",
-      caption: "Multiple image uploader w/ image grid",
-      captionLinkText: "API",
       accept: "image/svg+xml,image/png,image/jpeg,image/jpg,image/gif",
       maxSizeMb: 5,
       maxFiles: 10,
@@ -95,8 +85,6 @@
       buttonText: "Select images",
       addMoreText: "Add more",
       removeAllText: "Remove all files",
-      caption: "Multiple image uploader w/ image list",
-      captionLinkText: "API",
       accept: "image/svg+xml,image/png,image/jpeg,image/jpg,image/gif",
       maxSizeMb: 5,
       maxFiles: 10,
@@ -109,8 +97,6 @@
       description: "Drag & drop or click to browse (max. 10MB)",
       helperText: "",
       buttonText: "Upload file",
-      caption: "Single file uploader w/ max size",
-      captionLinkText: "API",
       maxSizeMb: 10,
       maxFiles: 1,
       multiple: false,
@@ -124,8 +110,6 @@
       buttonText: "Add files",
       addMoreText: "Add files",
       removeAllText: "Remove all",
-      caption: "Multiple files uploader w/ list",
-      captionLinkText: "API",
       maxSizeMb: 100,
       maxFiles: 10,
       multiple: true,
@@ -139,8 +123,6 @@
       buttonText: "Add files",
       addMoreText: "Add files",
       removeAllText: "Remove all",
-      caption: "Multiple files uploader w/ list",
-      captionLinkText: "API",
       maxSizeMb: 100,
       maxFiles: 10,
       multiple: true,
@@ -153,8 +135,6 @@
       buttonText: "Add more",
       addMoreText: "Add more",
       removeAllText: "Remove all",
-      caption: "Multiple files uploader w/ list inside",
-      captionLinkText: "API",
       maxSizeMb: 100,
       maxFiles: 10,
       multiple: true,
@@ -167,8 +147,6 @@
       buttonText: "Add files",
       addFilesText: "Add files",
       removeAllText: "Remove all",
-      caption: "Multiple files uploader w/ table",
-      captionLinkText: "API",
       maxSizeMb: 100,
       maxFiles: 10,
       multiple: true,
@@ -181,8 +159,6 @@
       buttonText: "Add files",
       addFilesText: "Add files",
       removeAllText: "Remove all",
-      caption: "With simulated progress track",
-      captionLinkText: "API",
       maxSizeMb: 100,
       maxFiles: 10,
       multiple: true,
@@ -287,15 +263,6 @@
       removeAllText: attr(root, "data-wf-up-remove-all-text", copy.removeAllText || "Remove all"),
       emptyText: attr(root, "data-wf-up-empty-text", "No file chosen"),
 
-      caption: attr(root, "data-wf-up-caption", copy.caption || ""),
-      captionLinkText: attr(root, "data-wf-up-caption-link-text", copy.captionLinkText || "API"),
-      docsUrl: attr(
-        root,
-        "data-wf-up-docs-url",
-        "https://github.com/cosscom/coss/blob/main/apps/origin/docs/use-file-upload.md"
-      ),
-      showCaption: boolAttr(root, "data-wf-up-show-caption", true),
-
       uploadingText: attr(root, "data-wf-up-uploading-text", "Uploading"),
       preparingText: attr(root, "data-wf-up-preparing-text", "Preparing"),
       waitingText: attr(root, "data-wf-up-waiting-text", "Waiting"),
@@ -310,7 +277,11 @@
       accept: attr(root, "data-wf-up-accept", copy.accept || ""),
       maxSizeMb: maxSizeMb,
       maxFiles: maxFiles,
-      multiple: boolAttr(root, "data-wf-up-multiple", copy.multiple !== undefined ? copy.multiple : maxFiles > 1),
+      multiple: boolAttr(
+        root,
+        "data-wf-up-multiple",
+        copy.multiple !== undefined ? copy.multiple : maxFiles > 1
+      ),
 
       folder: attr(root, "data-wf-up-folder", "uploads"),
       fieldName: attr(root, "data-wf-up-field-name", "uploaded_files"),
@@ -821,7 +792,7 @@
   }
 
   /* -------------------------------------------------------------------------- */
-  /* Coss-like renderers                                                        */
+  /* Renderers                                                                  */
   /* -------------------------------------------------------------------------- */
 
   function renderMinimal(state) {
@@ -1115,25 +1086,8 @@
       escapeAttr(state.config.variant) +
       '">' +
       body +
-      renderCaption(state.config) +
       renderError(state) +
       "</div>"
-    );
-  }
-
-  function renderCaption(c) {
-    if (!c.showCaption || !c.caption) return "";
-
-    return (
-      '<p class="wf-up__caption" aria-live="polite" role="region">' +
-      escapeHtml(c.caption) +
-      " ∙ " +
-      '<a class="wf-up__caption-link" href="' +
-      escapeAttr(c.docsUrl) +
-      '" target="_blank" rel="noreferrer">' +
-      escapeHtml(c.captionLinkText) +
-      "</a>" +
-      "</p>"
     );
   }
 
@@ -1157,7 +1111,14 @@
           "</p>"
         : "") +
       (options.showButton
-        ? renderActionButton(options.buttonText || c.buttonText, c, "md", "upload", "open", "wf-up__button--drop")
+        ? renderActionButton(
+            options.buttonText || c.buttonText,
+            c,
+            "md",
+            "upload",
+            "open",
+            "wf-up__button--drop"
+          )
         : "") +
       "</div>"
     );
