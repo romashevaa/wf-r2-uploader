@@ -1,6 +1,6 @@
 /* WebFolks File Uploader
-   Preset visual theme inspired by the reference components.
-   Outer width, max-width, background, and font should be controlled by Webflow wrapper/embed.
+   Outer wrapper controls: width, max-width, background, padding, border, radius.
+   Component CSS controls: internal layout, rows, buttons, previews, progress.
 */
 
 /* -------------------------------------------------------------------------- */
@@ -69,10 +69,11 @@
   gap: 16px;
   width: 100%;
   max-width: 100%;
-  padding: 48px;
+  padding: 0;
   background: transparent;
-  border: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+  border: 0;
   border-radius: 0;
+  box-shadow: none;
 }
 
 .wf-up__avatar-wrap {
@@ -633,25 +634,7 @@
 /* Responsive                                                                  */
 /* -------------------------------------------------------------------------- */
 
-@media (max-width: 767px) {
-  .wf-up__panel,
-  .wf-up__card,
-  .wf-up__image-single,
-  .wf-up__avatar-wrap,
-  .wf-up__minimal {
-    padding: 32px;
-  }
-}
-
 @media (max-width: 479px) {
-  .wf-up__panel,
-  .wf-up__card,
-  .wf-up__image-single,
-  .wf-up__avatar-wrap,
-  .wf-up__minimal {
-    padding: 24px;
-  }
-
   .wf-up__header,
   .wf-up__inside-head,
   .wf-up__compact-dropzone,
