@@ -1,7 +1,25 @@
 /* WebFolks File Uploader
-   Outer wrapper controls: width, max-width, background, padding, border, radius.
-   Component CSS controls: internal layout, rows, buttons, previews, progress.
+   Coss-inspired preset.
+   Webflow wrapper controls: width, max-width, bg, outer padding, outer border, outer radius.
 */
+
+/* -------------------------------------------------------------------------- */
+/* Webflow embed fix                                                           */
+/* -------------------------------------------------------------------------- */
+
+.w-embed:has(> .wf-up)::before,
+.w-embed:has(> .wf-up)::after,
+.upload.w-embed::before,
+.upload.w-embed::after,
+.wf-up::before,
+.wf-up::after,
+.wf-up__view::before,
+.wf-up__view::after,
+.wf-up__panel::before,
+.wf-up__panel::after {
+  content: none !important;
+  display: none !important;
+}
 
 /* -------------------------------------------------------------------------- */
 /* Base                                                                        */
@@ -55,7 +73,7 @@
 }
 
 /* -------------------------------------------------------------------------- */
-/* Main surfaces                                                               */
+/* Main generated wrappers                                                     */
 /* -------------------------------------------------------------------------- */
 
 .wf-up__panel,
@@ -80,12 +98,12 @@
   display: grid;
   grid-template-columns: auto 1fr;
   align-items: center;
-  gap: 20px;
+  gap: 16px;
 }
 
 .wf-up__minimal {
   align-items: flex-start;
-  gap: 12px;
+  gap: 8px;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -101,25 +119,29 @@
   letter-spacing: inherit;
 }
 
-.wf-up__description,
-.wf-up__helper,
-.wf-up__file-meta,
-.wf-up__empty,
-.wf-up__minimal-meta {
+.wf-up__description {
   margin: 0;
-  color: color-mix(in srgb, currentColor 62%, transparent);
+  color: color-mix(in srgb, currentColor 64%, transparent);
   font-size: 14px;
   font-weight: 400;
   line-height: 20px;
   letter-spacing: inherit;
 }
 
-.wf-up__helper {
-  color: color-mix(in srgb, currentColor 48%, transparent);
+.wf-up__helper,
+.wf-up__file-meta,
+.wf-up__empty,
+.wf-up__minimal-meta {
+  margin: 0;
+  color: color-mix(in srgb, currentColor 56%, transparent);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  letter-spacing: inherit;
 }
 
 /* -------------------------------------------------------------------------- */
-/* Dropzones                                                                   */
+/* Dropzone                                                                    */
 /* -------------------------------------------------------------------------- */
 
 .wf-up__dropzone,
@@ -132,8 +154,8 @@
   border-radius: 8px;
   cursor: pointer;
   transition:
-    border-color 0.15s ease,
-    background-color 0.15s ease;
+    border-color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+    background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .wf-up__dropzone {
@@ -151,7 +173,7 @@
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   min-height: 68px;
   padding: 16px;
 }
@@ -159,28 +181,34 @@
 .wf-up.is-dragging .wf-up__dropzone,
 .wf-up.is-dragging .wf-up__compact-dropzone,
 .wf-up.is-dragging .wf-up__image-single-empty {
-  border-color: currentColor;
+  border-color: color-mix(in srgb, currentColor 42%, transparent);
   background: color-mix(in srgb, currentColor 4%, transparent);
 }
 
-.wf-up__dropzone-icon,
-.wf-up__compact-icon,
-.wf-up__card-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: color-mix(in srgb, currentColor 72%, transparent);
+/* Reference-style basic dropzone: no extra empty-state block under it */
+.wf-up--file-dropzone .wf-up__empty,
+.wf-up--image-dropzone .wf-up__empty {
+  display: none;
 }
+
+/* -------------------------------------------------------------------------- */
+/* Icons                                                                       */
+/* -------------------------------------------------------------------------- */
 
 .wf-up__dropzone-icon,
 .wf-up__compact-icon,
 .wf-up__card-icon,
 .wf-up__file-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
   width: 36px;
   height: 36px;
-  flex: 0 0 auto;
+  color: color-mix(in srgb, currentColor 72%, transparent);
   border: 1px solid color-mix(in srgb, currentColor 16%, transparent);
   border-radius: 8px;
+  overflow: hidden;
 }
 
 .wf-up__dropzone-icon svg,
@@ -222,11 +250,11 @@
   text-decoration: none;
   white-space: nowrap;
   transition:
-    color 0.15s ease,
-    background-color 0.15s ease,
-    border-color 0.15s ease,
-    box-shadow 0.15s ease,
-    opacity 0.15s ease;
+    color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+    background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .wf-up__button {
@@ -234,21 +262,25 @@
   background: #ffffff;
   color: #111111;
   box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.1),
-    0 1px 2px -1px rgba(0, 0, 0, 0.1);
+    rgba(0, 0, 0, 0.1) 0px 1px 3px 0px,
+    rgba(0, 0, 0, 0.1) 0px 1px 2px -1px;
 }
 
 .wf-up__button:hover {
   box-shadow:
-    0 2px 6px rgba(0, 0, 0, 0.12),
-    0 1px 2px -1px rgba(0, 0, 0, 0.12);
+    rgba(0, 0, 0, 0.12) 0px 2px 6px 0px,
+    rgba(0, 0, 0, 0.12) 0px 1px 2px -1px;
 }
 
 .wf-up__secondary-button {
+  min-height: 32px;
+  padding: 0 12px;
   border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
   background: transparent;
   color: inherit;
-  box-shadow: none;
+  box-shadow: rgba(0, 0, 0, 0.05) 0px 1px 2px 0px;
+  font-size: 12px;
+  line-height: 16px;
 }
 
 .wf-up__secondary-button:hover {
@@ -259,10 +291,10 @@
   padding: 0;
   border: 0;
   background: transparent;
-  color: color-mix(in srgb, currentColor 72%, transparent);
-  font-size: 14px;
+  color: color-mix(in srgb, currentColor 70%, transparent);
+  font-size: 12px;
   font-weight: 500;
-  line-height: 20px;
+  line-height: 16px;
 }
 
 .wf-up__link-button:hover {
@@ -289,7 +321,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 8px;
 }
 
 .wf-up__header > div,
@@ -303,7 +335,7 @@
 }
 
 .wf-up__footer {
-  padding-top: 2px;
+  padding-top: 0;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -335,7 +367,7 @@
 .wf-up__single-summary {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   width: 100%;
   max-width: 100%;
   min-width: 0;
@@ -344,13 +376,6 @@
   background: transparent;
   border: 1px solid color-mix(in srgb, currentColor 12%, transparent);
   border-radius: 8px;
-}
-
-.wf-up__file-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: color-mix(in srgb, currentColor 72%, transparent);
 }
 
 .wf-up__file-info,
@@ -372,9 +397,9 @@
 .wf-up__file-status {
   flex: 0 0 auto;
   color: color-mix(in srgb, currentColor 56%, transparent);
-  font-size: 13px;
-  font-weight: 400;
-  line-height: 18px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
   white-space: nowrap;
 }
 
@@ -383,8 +408,8 @@
   align-items: center;
   justify-content: center;
   flex: 0 0 auto;
-  width: 28px;
-  height: 28px;
+  width: 36px;
+  height: 36px;
   padding: 0;
   border: 0;
   border-radius: 8px;
@@ -392,12 +417,15 @@
   color: color-mix(in srgb, currentColor 56%, transparent);
   font-size: 20px;
   line-height: 1;
+  opacity: 0.72;
   transition:
-    color 0.15s ease,
-    background-color 0.15s ease;
+    color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+    background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .wf-up__remove-button:hover {
+  opacity: 1;
   background: color-mix(in srgb, currentColor 6%, transparent);
   color: #ef4444;
 }
@@ -405,14 +433,15 @@
 .wf-up__error {
   width: 100%;
   color: #ef4444;
-  font-size: 14px;
-  line-height: 20px;
+  font-size: 12px;
+  line-height: 16px;
 }
 
 .wf-up__empty {
   width: 100%;
   min-height: 48px;
   padding: 14px;
+  color: color-mix(in srgb, currentColor 56%, transparent);
   border: 1px dashed color-mix(in srgb, currentColor 14%, transparent);
   border-radius: 8px;
   text-align: center;
@@ -425,7 +454,7 @@
 .wf-up__inside {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
   padding: 16px;
   border: 1px solid color-mix(in srgb, currentColor 12%, transparent);
   border-radius: 8px;
@@ -446,8 +475,9 @@
   min-width: 640px;
   border-collapse: collapse;
   font: inherit;
-  font-size: 14px;
-  line-height: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 18.5714px;
 }
 
 .wf-up__table th,
@@ -475,7 +505,7 @@
 .wf-up__image-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 12px;
+  gap: 8px;
 }
 
 .wf-up__image-tile,
@@ -528,7 +558,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 9px;
+  gap: 8px;
   padding: 24px;
   color: color-mix(in srgb, currentColor 70%, transparent);
   text-align: center;
@@ -562,12 +592,12 @@
   background: color-mix(in srgb, currentColor 4%, transparent);
   color: color-mix(in srgb, currentColor 72%, transparent);
   transition:
-    border-color 0.15s ease,
-    background-color 0.15s ease;
+    border-color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+    background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .wf-up__avatar:hover {
-  border-color: currentColor;
+  border-color: color-mix(in srgb, currentColor 42%, transparent);
   background: color-mix(in srgb, currentColor 6%, transparent);
 }
 
@@ -607,7 +637,7 @@
 }
 
 /* -------------------------------------------------------------------------- */
-/* Variant-specific small adjustments                                          */
+/* Variant adjustments                                                         */
 /* -------------------------------------------------------------------------- */
 
 .wf-up--file-card .wf-up__card {
@@ -615,11 +645,11 @@
 }
 
 .wf-up--file-card .wf-up__card-icon {
-  margin-bottom: 2px;
+  margin-bottom: 0;
 }
 
 .wf-up--image-single .wf-up__image-single {
-  gap: 12px;
+  gap: 8px;
 }
 
 .wf-up--image-single .wf-up__image-single-preview {
@@ -627,7 +657,7 @@
 }
 
 .wf-up--minimal .wf-up__file-list {
-  margin-top: 2px;
+  margin-top: 0;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -664,22 +694,4 @@
     width: 88px;
     height: 88px;
   }
-}
-
-/* -------------------------------------------------------------------------- */
-/* Webflow embed clearfix fix                                                  */
-/* -------------------------------------------------------------------------- */
-
-.w-embed:has(> .wf-up)::before,
-.w-embed:has(> .wf-up)::after,
-.upload.w-embed::before,
-.upload.w-embed::after,
-.wf-up::before,
-.wf-up::after,
-.wf-up__view::before,
-.wf-up__view::after,
-.wf-up__panel::before,
-.wf-up__panel::after {
-  content: none !important;
-  display: none !important;
 }
