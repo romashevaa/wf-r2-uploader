@@ -10,7 +10,10 @@
     "file-card": "file-single",
     "file-dropzone": "file-list",
     "file-list-inside": "file-list",
-    "progress-list": "file-progress",
+
+    /* Old progress variant now falls back to normal file list */
+    "progress-list": "file-list",
+    "file-progress": "file-list",
   };
 
   var VARIANTS = {
@@ -23,7 +26,6 @@
     "file-single": renderFileSingle,
     "file-list": renderFileList,
     "file-table": renderFileTable,
-    "file-progress": renderFileProgress,
   };
 
   var VARIANT_COPY = {
@@ -108,17 +110,6 @@
     },
 
     "file-table": {
-      title: "Files",
-      buttonText: "Add files",
-      addFilesText: "Add files",
-      removeAllText: "Remove all",
-      maxSizeMb: 100,
-      maxFiles: 10,
-      multiple: true,
-      icon: "file",
-    },
-
-    "file-progress": {
       title: "Files",
       buttonText: "Add files",
       addFilesText: "Add files",
@@ -942,38 +933,6 @@
     return renderComponent(state, body);
   }
 
-  function renderFileProgress(state) {
-    var c = state.config;
-
-    var body =
-      '<div class="wf-up__field-stack">' +
-      '<div class="wf-up__files-panel">' +
-      '<div class="wf-up__files-header">' +
-      '<h3 class="wf-up__heading">' +
-      escapeHtml(c.title || "Files") +
-      " (" +
-      state.files.length +
-      ")</h3>" +
-      '<div class="wf-up__actions">' +
-      renderActionButton(c.addFilesText, c, "sm", "upload") +
-      (state.files.length
-        ? renderActionButton(c.removeAllText, c, "sm", "trash", "remove-all")
-        : "") +
-      "</div>" +
-      "</div>" +
-      '<div class="wf-up__progress-list">' +
-      (state.files.length
-        ? state.files.map(function (file) {
-            return renderProgressRow(file, c);
-          }).join("")
-        : renderEmptyState(c.emptyText)) +
-      "</div>" +
-      "</div>" +
-      "</div>";
-
-    return renderComponent(state, body);
-  }
-
   /* -------------------------------------------------------------------------- */
   /* Render helpers                                                             */
   /* -------------------------------------------------------------------------- */
@@ -1220,35 +1179,6 @@
       escapeAttr(file.name) +
       '">' +
       renderFloatingRemoveButton(file, c) +
-      "</div>"
-    );
-  }
-
-  function renderProgressRow(file, c) {
-    return (
-      '<div class="wf-up__progress-row">' +
-      '<div class="wf-up__file-icon" aria-hidden="true">' +
-      renderIcon(iconForFile(file), c) +
-      "</div>" +
-      '<div class="wf-up__progress-body">' +
-      '<div class="wf-up__progress-head">' +
-      '<div class="wf-up__file-name">' +
-      escapeHtml(file.name) +
-      "</div>" +
-      '<div class="wf-up__file-meta">' +
-      formatBytes(file.size) +
-      "</div>" +
-      "</div>" +
-      '<div class="wf-up__progress-track">' +
-      '<div class="wf-up__progress-fill" style="width:' +
-      Number(file.progress || 0) +
-      '%;"></div>' +
-      "</div>" +
-      '<div class="wf-up__progress-foot">' +
-      renderStatus(file, c) +
-      "</div>" +
-      "</div>" +
-      renderRemoveButton(file, c) +
       "</div>"
     );
   }
