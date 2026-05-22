@@ -1,6 +1,6 @@
 /* WebFolks File Uploader
    Coss-style preset for cleaned uploader variants.
-   Webflow wrapper controls: width, max-width, background, outer padding, outer border, radius.
+   Webflow wrapper controls: width, max-width, background, outer padding, outer border, radius, height.
 */
 
 /* -------------------------------------------------------------------------- */
@@ -68,6 +68,8 @@
   display: block;
   width: 100%;
   max-width: 100%;
+  height: 100%;
+  min-height: 0;
   color: var(--wf-up-fg);
   font: inherit;
   letter-spacing: inherit;
@@ -102,6 +104,8 @@
 .wf-up__view {
   width: 100%;
   max-width: 100%;
+  height: 100%;
+  min-height: 0;
 }
 
 .wf-up__custom-icon {
@@ -112,7 +116,7 @@
 }
 
 /* -------------------------------------------------------------------------- */
-/* Full-width structure                                                        */
+/* Full-width / full-height structure                                          */
 /* -------------------------------------------------------------------------- */
 
 .wf-up,
@@ -127,6 +131,12 @@
 .wf-up__drop-area {
   width: 100%;
   max-width: 100%;
+}
+
+.wf-up__component,
+.wf-up__field-stack {
+  height: 100%;
+  min-height: 0;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -168,7 +178,10 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 8px;
+  height: 100%;
+  min-height: 0;
   text-align: center;
 }
 
@@ -213,6 +226,8 @@
   position: relative;
   display: flex;
   overflow: hidden;
+  height: 100%;
+  min-height: 0;
   border: 1px dashed var(--wf-up-border);
   border-radius: var(--wf-up-radius-lg);
   background: transparent;
@@ -241,28 +256,35 @@
 }
 
 .wf-up__drop-area--large {
-  min-height: 208px;
+  min-height: 0;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 16px;
-}
-
-.wf-up--file-list .wf-up__drop-area--large {
-  min-height: 160px;
 }
 
 .wf-up__drop-area--compact {
-  min-height: 128px;
+  min-height: 0;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 16px;
 }
 
-/* Prevent hover flicker after files are added.
-   During upload progress, JS re-renders several times. If cursor is still over
-   the populated dropzone, hover animation can replay/blink. */
+/* Fallback height only when no parent height exists */
+.wf-up:not(:has(.wf-up__drop-area[data-files="true"])) .wf-up__drop-area--large {
+  min-height: 208px;
+}
+
+.wf-up--file-list:not(:has(.wf-up__drop-area[data-files="true"])) .wf-up__drop-area--large {
+  min-height: 160px;
+}
+
+.wf-up--file-single .wf-up__drop-area--compact {
+  min-height: 128px;
+}
+
+/* Prevent hover flicker after files are added */
 .wf-up__drop-area[data-files="true"],
 .wf-up__drop-area.has-file,
 .wf-up__drop-area:has(.wf-up__file-row),
@@ -285,6 +307,15 @@
 .wf-up.is-dragging .wf-up__drop-area,
 .wf-up__drop-area[data-dragging="true"] {
   background: var(--wf-up-accent);
+}
+
+/* If parent has fixed/max height, populated content stays inside */
+.wf-up__drop-area[data-files="true"],
+.wf-up__files-content,
+.wf-up__files-panel,
+.wf-up__table-card {
+  min-height: 0;
+  overflow: hidden;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -437,7 +468,6 @@
   margin-left: -2px;
 }
 
-/* Full-width button option */
 .wf-up[data-wf-up-button-full="true"] .wf-up__button {
   width: 100%;
 }
@@ -523,6 +553,8 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+  height: 100%;
+  min-height: 0;
 }
 
 .wf-up__files-panel,
@@ -530,6 +562,8 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+  height: 100%;
+  min-height: 0;
 }
 
 .wf-up__files-header {
@@ -538,6 +572,7 @@
   justify-content: space-between;
   gap: 16px;
   width: 100%;
+  flex: 0 0 auto;
 }
 
 .wf-up__heading {
@@ -565,6 +600,7 @@
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
+  flex: 0 0 auto;
 }
 
 .wf-up__drop-content--compact + .wf-up__image-list,
@@ -587,6 +623,8 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
   width: 100%;
+  min-height: 0;
+  overflow: auto;
 }
 
 .wf-up__image-grid-item {
@@ -630,6 +668,8 @@
   flex-direction: column;
   gap: 12px;
   width: 100%;
+  min-height: 0;
+  overflow: auto;
 }
 
 .wf-up__image-row,
@@ -642,6 +682,7 @@
   width: 100%;
   min-width: 0;
   min-height: 48px;
+  flex: 0 0 auto;
 }
 
 .wf-up__image-thumb {
@@ -719,7 +760,6 @@
   white-space: nowrap;
 }
 
-/* In card/list components, rows should feel like separate items */
 .wf-up--file-progress .wf-up__progress-row {
   padding: 8px 0;
 }
@@ -823,7 +863,8 @@
 
 .wf-up__table-wrap {
   width: 100%;
-  overflow-x: auto;
+  min-height: 0;
+  overflow: auto;
   border: 1px solid var(--wf-up-border);
   border-radius: var(--wf-up-radius);
 }
@@ -953,15 +994,12 @@
   color: var(--wf-up-error);
   font-size: 12px;
   line-height: 16px;
+  flex: 0 0 auto;
 }
 
 /* -------------------------------------------------------------------------- */
 /* Variant-specific refinements                                                */
 /* -------------------------------------------------------------------------- */
-
-.wf-up--file-single .wf-up__drop-area--compact {
-  min-height: 128px;
-}
 
 .wf-up--image-single .wf-up__single-summary {
   margin-top: 4px;
@@ -987,14 +1025,6 @@
 
   .wf-up__button {
     width: 100%;
-  }
-
-  .wf-up__drop-area--large {
-    min-height: 180px;
-  }
-
-  .wf-up--file-list .wf-up__drop-area--large {
-    min-height: 150px;
   }
 
   .wf-up__image-grid {
