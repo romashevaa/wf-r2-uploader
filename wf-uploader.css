@@ -437,18 +437,6 @@
   margin-left: -2px;
 }
 
-/* Image button variant uses primary button */
-.wf-up--image-button .wf-up__button--md {
-  border-color: transparent;
-  background: var(--wf-up-primary-bg);
-  color: var(--wf-up-primary-fg);
-  box-shadow: var(--wf-up-shadow-sm);
-}
-
-.wf-up--image-button .wf-up__button--md:hover {
-  opacity: 0.9;
-}
-
 /* Full-width button option */
 .wf-up[data-wf-up-button-full="true"] .wf-up__button {
   width: 100%;
