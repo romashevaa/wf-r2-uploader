@@ -1,5 +1,5 @@
 /* WebFolks File Uploader
-   Coss-style preset for rebuilt JS structure.
+   Coss-style preset for cleaned uploader variants.
    Webflow wrapper controls: width, max-width, background, outer padding, outer border, radius.
 */
 
@@ -112,12 +112,28 @@
 }
 
 /* -------------------------------------------------------------------------- */
+/* Full-width structure                                                        */
+/* -------------------------------------------------------------------------- */
+
+.wf-up,
+.wf-up__view,
+.wf-up__component,
+.wf-up__field-stack,
+.wf-up__center-stack,
+.wf-up__files-content,
+.wf-up__files-panel,
+.wf-up__table-card,
+.wf-up__table-wrap,
+.wf-up__drop-area {
+  width: 100%;
+  max-width: 100%;
+}
+
+/* -------------------------------------------------------------------------- */
 /* Component shell                                                             */
 /* -------------------------------------------------------------------------- */
 
 .wf-up__component {
-  width: 100%;
-  max-width: 100%;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -132,7 +148,6 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  width: 100%;
 }
 
 .wf-up__relative,
@@ -142,27 +157,32 @@
 
 .wf-up__relative-inline {
   display: inline-block;
+  max-width: 100%;
 }
 
-/* Centered small examples */
+/* -------------------------------------------------------------------------- */
+/* Centered small variants                                                     */
+/* -------------------------------------------------------------------------- */
+
 .wf-up__center-stack {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  width: 100%;
   text-align: center;
 }
 
 .wf-up__inline-row {
-  display: inline-flex;
+  display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
+  width: 100%;
   vertical-align: top;
 }
 
 /* -------------------------------------------------------------------------- */
-/* Captions                                                                    */
+/* Captions — currently not rendered by JS, kept for optional future support   */
 /* -------------------------------------------------------------------------- */
 
 .wf-up__caption {
@@ -192,8 +212,6 @@
 .wf-up__drop-area {
   position: relative;
   display: flex;
-  width: 100%;
-  max-width: 100%;
   overflow: hidden;
   border: 1px dashed var(--wf-up-border);
   border-radius: var(--wf-up-radius-lg);
@@ -230,7 +248,6 @@
   padding: 16px;
 }
 
-.wf-up--file-dropzone .wf-up__drop-area--large,
 .wf-up--file-list .wf-up__drop-area--large {
   min-height: 160px;
 }
@@ -241,6 +258,33 @@
   align-items: center;
   justify-content: center;
   padding: 16px;
+}
+
+/* Prevent hover flicker after files are added.
+   During upload progress, JS re-renders several times. If cursor is still over
+   the populated dropzone, hover animation can replay/blink. */
+.wf-up__drop-area[data-files="true"],
+.wf-up__drop-area.has-file,
+.wf-up__drop-area:has(.wf-up__file-row),
+.wf-up__drop-area:has(.wf-up__image-row),
+.wf-up__drop-area:has(.wf-up__image-grid),
+.wf-up__drop-area:has(.wf-up__file-list) {
+  transition: border-color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.wf-up__drop-area[data-files="true"]:hover,
+.wf-up__drop-area.has-file:hover,
+.wf-up__drop-area:has(.wf-up__file-row):hover,
+.wf-up__drop-area:has(.wf-up__image-row):hover,
+.wf-up__drop-area:has(.wf-up__image-grid):hover,
+.wf-up__drop-area:has(.wf-up__file-list):hover {
+  background: transparent;
+}
+
+/* Still allow real drag state feedback */
+.wf-up.is-dragging .wf-up__drop-area,
+.wf-up__drop-area[data-dragging="true"] {
+  background: var(--wf-up-accent);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -393,15 +437,15 @@
   margin-left: -2px;
 }
 
-/* Basic upload example uses primary button */
-.wf-up--minimal .wf-up__button--md {
+/* Image button variant uses primary button */
+.wf-up--image-button .wf-up__button--md {
   border-color: transparent;
   background: var(--wf-up-primary-bg);
   color: var(--wf-up-primary-fg);
   box-shadow: var(--wf-up-shadow-sm);
 }
 
-.wf-up--minimal .wf-up__button--md:hover {
+.wf-up--image-button .wf-up__button--md:hover {
   opacity: 0.9;
 }
 
@@ -411,7 +455,7 @@
 }
 
 /* -------------------------------------------------------------------------- */
-/* Small avatar/icon uploaders                                                 */
+/* Small avatar / image button variants                                        */
 /* -------------------------------------------------------------------------- */
 
 .wf-up__avatar-icon {
@@ -489,7 +533,6 @@
 
 .wf-up__files-content {
   display: flex;
-  width: 100%;
   flex-direction: column;
   gap: 16px;
 }
@@ -497,7 +540,6 @@
 .wf-up__files-panel,
 .wf-up__table-card {
   display: flex;
-  width: 100%;
   flex-direction: column;
   gap: 16px;
 }
@@ -597,9 +639,9 @@
 .wf-up__file-list,
 .wf-up__progress-list {
   display: flex;
-  width: 100%;
   flex-direction: column;
   gap: 12px;
+  width: 100%;
 }
 
 .wf-up__image-row,
@@ -690,8 +732,7 @@
 }
 
 /* In card/list components, rows should feel like separate items */
-.wf-up--file-list-inside .wf-up__file-row,
-.wf-up--progress-list .wf-up__progress-row {
+.wf-up--file-progress .wf-up__progress-row {
   padding: 8px 0;
 }
 
@@ -930,7 +971,7 @@
 /* Variant-specific refinements                                                */
 /* -------------------------------------------------------------------------- */
 
-.wf-up--file-card .wf-up__drop-area--compact {
+.wf-up--file-single .wf-up__drop-area--compact {
   min-height: 128px;
 }
 
@@ -964,7 +1005,6 @@
     min-height: 180px;
   }
 
-  .wf-up--file-dropzone .wf-up__drop-area--large,
   .wf-up--file-list .wf-up__drop-area--large {
     min-height: 150px;
   }
