@@ -1,6 +1,6 @@
 /* WebFolks File Uploader
-   Coss-style preset for cleaned uploader variants.
-   Webflow wrapper controls: width, max-width, background, outer padding, outer border, radius, height.
+   Final 8-variant CSS.
+   Webflow wrapper controls: width, max-width, background, outer padding, border, radius, height.
 */
 
 /* -------------------------------------------------------------------------- */
@@ -37,7 +37,6 @@
   --wf-up-accent-strong: color-mix(in srgb, currentColor 8%, transparent);
 
   --wf-up-surface: transparent;
-  --wf-up-surface-raised: color-mix(in srgb, currentColor 3%, transparent);
 
   --wf-up-primary-bg: #111111;
   --wf-up-primary-fg: #ffffff;
@@ -45,14 +44,11 @@
   --wf-up-error: #ef4444;
   --wf-up-success: #10b981;
 
-  --wf-up-radius-sm: 6px;
   --wf-up-radius: 8px;
   --wf-up-radius-lg: 12px;
   --wf-up-ring: color-mix(in srgb, currentColor 18%, transparent);
 
   --wf-up-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --wf-up-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1),
-    0 1px 2px -1px rgba(0, 0, 0, 0.1);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -116,7 +112,7 @@
 }
 
 /* -------------------------------------------------------------------------- */
-/* Full-width / full-height structure                                          */
+/* Full-width / full-height chain                                              */
 /* -------------------------------------------------------------------------- */
 
 .wf-up,
@@ -149,8 +145,6 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  height: 100%;
-  min-height: 0;
   padding: 0;
   background: transparent;
   border: 0;
@@ -162,8 +156,6 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  height: 100%;
-  min-height: 0;
 }
 
 .wf-up__relative {
@@ -205,31 +197,6 @@
   justify-content: center;
   gap: 8px;
   width: 100%;
-  vertical-align: top;
-}
-
-/* -------------------------------------------------------------------------- */
-/* Captions — currently not rendered by JS, kept for optional future support   */
-/* -------------------------------------------------------------------------- */
-
-.wf-up__caption {
-  margin: 8px 0 0;
-  color: var(--wf-up-muted);
-  font-size: 12px;
-  font-weight: 400;
-  line-height: 16px;
-  text-align: center;
-}
-
-.wf-up__caption-link {
-  color: inherit;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-  transition: color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.wf-up__caption-link:hover {
-  color: var(--wf-up-fg);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -269,14 +236,7 @@
   box-shadow: 0 0 0 3px var(--wf-up-ring);
 }
 
-.wf-up__drop-area--large {
-  min-height: 0;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-}
-
+.wf-up__drop-area--large,
 .wf-up__drop-area--compact {
   min-height: 0;
   flex-direction: column;
@@ -285,8 +245,8 @@
   padding: 16px;
 }
 
-/* Fallback height only when no parent height exists */
-.wf-up:not(:has(.wf-up__drop-area[data-files="true"])) .wf-up__drop-area--large {
+/* Fallback visual size when no wrapper height is set */
+.wf-up:not(:has(.wf-up__drop-area[data-files="true"])) .wf-up__drop-area--large:not(.has-file) {
   min-height: 208px;
 }
 
@@ -294,7 +254,7 @@
   min-height: 160px;
 }
 
-.wf-up--file-single .wf-up__drop-area--compact {
+.wf-up--file-single .wf-up__drop-area--compact:not(:has(.wf-up__file-row)) {
   min-height: 128px;
 }
 
@@ -317,13 +277,12 @@
   background: transparent;
 }
 
-/* Still allow real drag state feedback */
 .wf-up.is-dragging .wf-up__drop-area,
 .wf-up__drop-area[data-dragging="true"] {
   background: var(--wf-up-accent);
 }
 
-/* If parent has fixed/max height, populated content stays inside */
+/* Keep populated content inside fixed/max-height wrappers */
 .wf-up__drop-area[data-files="true"],
 .wf-up__files-content,
 .wf-up__files-panel,
@@ -428,8 +387,8 @@
   gap: 8px;
   width: fit-content;
   max-width: 100%;
-  border-radius: var(--wf-up-radius);
   border: 1px solid var(--wf-up-border);
+  border-radius: var(--wf-up-radius);
   background: var(--wf-up-surface);
   color: var(--wf-up-fg);
   box-shadow: var(--wf-up-shadow-xs);
@@ -563,14 +522,7 @@
 /* Uploaded files shared layouts                                               */
 /* -------------------------------------------------------------------------- */
 
-.wf-up__files-content {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  height: 100%;
-  min-height: 0;
-}
-
+.wf-up__files-content,
 .wf-up__files-panel,
 .wf-up__table-card {
   display: flex;
@@ -601,19 +553,19 @@
   white-space: nowrap;
 }
 
-.wf-up__actions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
+.wf-up__actions,
 .wf-up__files-footer {
   display: flex;
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
+}
+
+.wf-up__actions {
+  justify-content: flex-end;
+}
+
+.wf-up__files-footer {
   flex: 0 0 auto;
 }
 
@@ -623,8 +575,7 @@
 }
 
 .wf-up__image-list + .wf-up__files-footer,
-.wf-up__file-list + .wf-up__files-footer,
-.wf-up__progress-list + .wf-up__files-footer {
+.wf-up__file-list + .wf-up__files-footer {
   margin-top: 4px;
 }
 
@@ -676,8 +627,7 @@
 /* -------------------------------------------------------------------------- */
 
 .wf-up__image-list,
-.wf-up__file-list,
-.wf-up__progress-list {
+.wf-up__file-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -688,7 +638,6 @@
 
 .wf-up__image-row,
 .wf-up__file-row,
-.wf-up__progress-row,
 .wf-up__single-summary {
   display: flex;
   align-items: center;
@@ -774,10 +723,6 @@
   white-space: nowrap;
 }
 
-.wf-up--file-progress .wf-up__progress-row {
-  padding: 8px 0;
-}
-
 /* -------------------------------------------------------------------------- */
 /* Image preview                                                               */
 /* -------------------------------------------------------------------------- */
@@ -810,7 +755,6 @@
   transition:
     color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
     background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
-    border-color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
     box-shadow 0.15s cubic-bezier(0.4, 0, 0.2, 1),
     opacity 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -851,7 +795,6 @@
   border-radius: 999px;
   background: var(--wf-up-primary-bg);
   color: var(--wf-up-primary-fg);
-  box-shadow: none;
 }
 
 .wf-up__floating-remove:hover {
@@ -870,10 +813,6 @@
 /* -------------------------------------------------------------------------- */
 /* Table                                                                       */
 /* -------------------------------------------------------------------------- */
-
-.wf-up__table-card {
-  width: 100%;
-}
 
 .wf-up__table-wrap {
   width: 100%;
@@ -958,39 +897,6 @@
 }
 
 /* -------------------------------------------------------------------------- */
-/* Progress                                                                    */
-/* -------------------------------------------------------------------------- */
-
-.wf-up__progress-body {
-  min-width: 0;
-  flex: 1;
-}
-
-.wf-up__progress-head,
-.wf-up__progress-foot {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.wf-up__progress-track {
-  overflow: hidden;
-  width: 100%;
-  height: 8px;
-  margin: 8px 0;
-  border-radius: 999px;
-  background: var(--wf-up-accent-strong);
-}
-
-.wf-up__progress-fill {
-  height: 100%;
-  border-radius: inherit;
-  background: var(--wf-up-primary-bg);
-  transition: width 0.2s ease;
-}
-
-/* -------------------------------------------------------------------------- */
 /* Empty / error                                                               */
 /* -------------------------------------------------------------------------- */
 
@@ -1047,7 +953,6 @@
 
   .wf-up__image-row,
   .wf-up__file-row,
-  .wf-up__progress-row,
   .wf-up__single-summary {
     align-items: flex-start;
   }
