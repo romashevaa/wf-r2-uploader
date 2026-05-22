@@ -3,37 +3,45 @@
 
   var ROOT_SELECTOR = '[upload="file"]';
 
+  var VARIANT_ALIASES = {
+    minimal: "image-button",
+    "image-dropzone": "image-list",
+
+    "file-card": "file-single",
+    "file-dropzone": "file-list",
+    "file-list-inside": "file-list",
+    "progress-list": "file-progress",
+  };
+
   var VARIANTS = {
-    "file-dropzone": renderFileDropzone,
-    "file-list": renderFileList,
-    "file-list-inside": renderFileListInside,
-    "file-table": renderFileTable,
-    "file-card": renderFileCard,
-    "progress-list": renderProgressList,
-
-    "image-dropzone": renderImageDropzone,
-    "image-single": renderImageSingle,
-    "image-grid": renderImageGrid,
-    "image-list": renderImageList,
-
+    "image-button": renderImageButton,
     avatar: renderAvatar,
-    minimal: renderMinimal,
+    "image-single": renderImageSingle,
+    "image-list": renderImageList,
+    "image-grid": renderImageGrid,
+
+    "file-single": renderFileSingle,
+    "file-list": renderFileList,
+    "file-table": renderFileTable,
+    "file-progress": renderFileProgress,
   };
 
   var VARIANT_COPY = {
-    minimal: {
+    "image-button": {
       title: "Basic image uploader",
       buttonText: "Upload image",
       accept: "image/*",
+      maxSizeMb: 5,
       maxFiles: 1,
       multiple: false,
       icon: "avatar",
     },
 
     avatar: {
-      title: "Avatar uploader with droppable area",
+      title: "Avatar uploader",
       buttonText: "Upload image",
       accept: "image/*",
+      maxSizeMb: 5,
       maxFiles: 1,
       multiple: false,
       icon: "avatar",
@@ -42,7 +50,6 @@
     "image-single": {
       title: "Drop your image here",
       description: "SVG, PNG, JPG or GIF (max. 2MB)",
-      helperText: "",
       buttonText: "Select image",
       accept: "image/svg+xml,image/png,image/jpeg,image/jpg,image/gif",
       maxSizeMb: 2,
@@ -51,10 +58,9 @@
       icon: "image",
     },
 
-    "image-dropzone": {
+    "image-list": {
       title: "Drop your images here",
       description: "SVG, PNG, JPG or GIF (max. 5MB)",
-      helperText: "",
       buttonText: "Select images",
       addMoreText: "Add more",
       removeAllText: "Remove all files",
@@ -66,22 +72,8 @@
     },
 
     "image-grid": {
-      title: "Uploaded Files",
-      description: "",
-      buttonText: "Add more",
-      addMoreText: "Add more",
-      removeAllText: "Remove all files",
-      accept: "image/svg+xml,image/png,image/jpeg,image/jpg,image/gif",
-      maxSizeMb: 5,
-      maxFiles: 10,
-      multiple: true,
-      icon: "image",
-    },
-
-    "image-list": {
       title: "Drop your images here",
       description: "SVG, PNG, JPG or GIF (max. 5MB)",
-      helperText: "",
       buttonText: "Select images",
       addMoreText: "Add more",
       removeAllText: "Remove all files",
@@ -92,28 +84,14 @@
       icon: "image",
     },
 
-    "file-card": {
+    "file-single": {
       title: "Upload file",
       description: "Drag & drop or click to browse (max. 10MB)",
-      helperText: "",
       buttonText: "Upload file",
       maxSizeMb: 10,
       maxFiles: 1,
       multiple: false,
       icon: "file",
-    },
-
-    "file-dropzone": {
-      title: "Upload files",
-      description: "Drag & drop or click to browse",
-      helperText: "All files ∙ Max 10 files ∙ Up to 100MB",
-      buttonText: "Add files",
-      addMoreText: "Add files",
-      removeAllText: "Remove all",
-      maxSizeMb: 100,
-      maxFiles: 10,
-      multiple: true,
-      icon: "upload",
     },
 
     "file-list": {
@@ -129,21 +107,8 @@
       icon: "upload",
     },
 
-    "file-list-inside": {
-      title: "Uploaded Files",
-      description: "",
-      buttonText: "Add more",
-      addMoreText: "Add more",
-      removeAllText: "Remove all",
-      maxSizeMb: 100,
-      maxFiles: 10,
-      multiple: true,
-      icon: "file",
-    },
-
     "file-table": {
       title: "Files",
-      description: "",
       buttonText: "Add files",
       addFilesText: "Add files",
       removeAllText: "Remove all",
@@ -153,9 +118,8 @@
       icon: "file",
     },
 
-    "progress-list": {
+    "file-progress": {
       title: "Files",
-      description: "",
       buttonText: "Add files",
       addFilesText: "Add files",
       removeAllText: "Remove all",
@@ -175,11 +139,7 @@
   window.WebflowUploader.init = initAllUploaders;
 
   function initAllUploaders() {
-    var roots = document.querySelectorAll(ROOT_SELECTOR);
-
-    roots.forEach(function (root) {
-      initUploader(root);
-    });
+    document.querySelectorAll(ROOT_SELECTOR).forEach(initUploader);
   }
 
   function initUploader(root) {
@@ -237,13 +197,11 @@
     bindRequiredValidation(state);
     render(state);
 
-    dispatch(root, "wf-up:ready", {
-      files: [],
-    });
+    dispatch(root, "wf-up:ready", { files: [] });
   }
 
   function readConfig(root) {
-    var variant = normalizeVariant(attr(root, "data-wf-up-variant", "file-dropzone"));
+    var variant = normalizeVariant(attr(root, "data-wf-up-variant", "file-list"));
     var copy = VARIANT_COPY[variant] || {};
     var maxFiles = numberAttr(root, "data-wf-up-max-files", copy.maxFiles || 1);
     var maxSizeMb = numberAttr(root, "data-wf-up-max-size-mb", copy.maxSizeMb || 10);
@@ -267,11 +225,7 @@
       preparingText: attr(root, "data-wf-up-preparing-text", "Preparing"),
       waitingText: attr(root, "data-wf-up-waiting-text", "Waiting"),
       successText: attr(root, "data-wf-up-success-text", "Uploaded"),
-      errorText: attr(
-        root,
-        "data-wf-up-error-text",
-        "Something went wrong. Please try again."
-      ),
+      errorText: attr(root, "data-wf-up-error-text", "Something went wrong. Please try again."),
       requiredText: attr(root, "data-wf-up-required-text", "Please upload a file."),
 
       accept: attr(root, "data-wf-up-accept", copy.accept || ""),
@@ -299,13 +253,14 @@
   }
 
   function normalizeVariant(value) {
-    return VARIANTS[value] ? value : "file-dropzone";
+    var normalized = VARIANT_ALIASES[value] || value;
+    return VARIANTS[normalized] ? normalized : "file-list";
   }
 
   function render(state) {
     if (!state.view) return;
 
-    var renderer = VARIANTS[state.config.variant] || renderFileDropzone;
+    var renderer = VARIANTS[state.config.variant] || renderFileList;
 
     state.view.innerHTML = renderer(state);
 
@@ -314,9 +269,7 @@
   }
 
   function bindRenderedActions(state) {
-    var actions = state.view.querySelectorAll("[data-wf-up-action]");
-
-    actions.forEach(function (el) {
+    state.view.querySelectorAll("[data-wf-up-action]").forEach(function (el) {
       var action = el.getAttribute("data-wf-up-action");
 
       if (el.tagName === "BUTTON" && !el.getAttribute("type")) {
@@ -343,9 +296,7 @@
       });
     });
 
-    var dropzones = state.view.querySelectorAll("[data-wf-up-dropzone]");
-
-    dropzones.forEach(function (zone) {
+    state.view.querySelectorAll("[data-wf-up-dropzone]").forEach(function (zone) {
       zone.addEventListener("click", function (event) {
         if (event.target.closest && event.target.closest("[data-wf-up-action]")) {
           return;
@@ -521,9 +472,7 @@
 
     var response = await fetch(config.endpoint, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         filename: file.name,
         contentType: file.type || "application/octet-stream",
@@ -657,13 +606,8 @@
 
     render(state);
 
-    dispatch(state.root, "wf-up:reset", {
-      files: [],
-    });
-
-    dispatch(state.root, "wf-up:change", {
-      files: [],
-    });
+    dispatch(state.root, "wf-up:reset", { files: [] });
+    dispatch(state.root, "wf-up:change", { files: [] });
   }
 
   function updateOutput(state) {
@@ -763,7 +707,6 @@
         event.preventDefault();
 
         var resetTarget = reset.getAttribute("data-wf-up-target");
-
         var uploaders = resetTarget
           ? document.querySelectorAll(resetTarget)
           : document.querySelectorAll(ROOT_SELECTOR);
@@ -795,7 +738,7 @@
   /* Renderers                                                                  */
   /* -------------------------------------------------------------------------- */
 
-  function renderMinimal(state) {
+  function renderImageButton(state) {
     var c = state.config;
     var file = state.files[0];
 
@@ -863,7 +806,7 @@
     return renderComponent(state, body);
   }
 
-  function renderImageDropzone(state) {
+  function renderImageList(state) {
     var c = state.config;
     var hasFiles = state.files.length > 0;
 
@@ -900,8 +843,8 @@
         ? renderImageGridContent(state)
         : renderDropContent(c, {
             icon: "image",
-            title: "Drop your images here",
-            description: "SVG, PNG, JPG or GIF (max. " + c.maxSizeMb + "MB)",
+            title: c.title,
+            description: c.description,
             buttonText: c.buttonText,
             showButton: true,
           })) +
@@ -911,11 +854,7 @@
     return renderComponent(state, body);
   }
 
-  function renderImageList(state) {
-    return renderImageDropzone(state);
-  }
-
-  function renderFileCard(state) {
+  function renderFileSingle(state) {
     var c = state.config;
     var file = state.files[0];
 
@@ -937,7 +876,7 @@
     return renderComponent(state, body);
   }
 
-  function renderFileDropzone(state) {
+  function renderFileList(state) {
     var c = state.config;
     var hasFiles = state.files.length > 0;
 
@@ -962,51 +901,13 @@
     return renderComponent(state, body);
   }
 
-  function renderFileList(state) {
-    return renderFileDropzone(state);
-  }
-
-  function renderFileListInside(state) {
-    var c = state.config;
-
-    var body =
-      '<div class="wf-up__field-stack">' +
-      '<div class="wf-up__files-panel" data-files="' +
-      (state.files.length ? "true" : "false") +
-      '">' +
-      '<div class="wf-up__files-header">' +
-      '<h3 class="wf-up__heading">Uploaded Files (' +
-      state.files.length +
-      ")</h3>" +
-      (state.files.length
-        ? renderActionButton(c.removeAllText, c, "sm", "trash", "remove-all")
-        : "") +
-      "</div>" +
-      '<div class="wf-up__file-list">' +
-      (state.files.length
-        ? state.files.map(function (file) {
-            return renderFileRow(file, c);
-          }).join("")
-        : renderEmptyState(c.emptyText)) +
-      "</div>" +
-      '<div class="wf-up__files-footer">' +
-      renderActionButton(c.addMoreText, c, "sm", "upload") +
-      "</div>" +
-      "</div>" +
-      "</div>";
-
-    return renderComponent(state, body);
-  }
-
   function renderFileTable(state) {
     var c = state.config;
 
     var rows = state.files.length
-      ? state.files
-          .map(function (file) {
-            return renderTableRow(file, c);
-          })
-          .join("")
+      ? state.files.map(function (file) {
+          return renderTableRow(file, c);
+        }).join("")
       : '<tr><td class="wf-up__table-empty" colspan="4">' +
         escapeHtml(c.emptyText) +
         "</td></tr>";
@@ -1015,7 +916,9 @@
       '<div class="wf-up__field-stack">' +
       '<div class="wf-up__table-card">' +
       '<div class="wf-up__files-header">' +
-      '<h3 class="wf-up__heading">Files (' +
+      '<h3 class="wf-up__heading">' +
+      escapeHtml(c.title || "Files") +
+      " (" +
       state.files.length +
       ")</h3>" +
       '<div class="wf-up__actions">' +
@@ -1027,14 +930,7 @@
       "</div>" +
       '<div class="wf-up__table-wrap">' +
       '<table class="wf-up__table">' +
-      "<thead>" +
-      "<tr>" +
-      "<th>Name</th>" +
-      "<th>Type</th>" +
-      "<th>Size</th>" +
-      "<th>Actions</th>" +
-      "</tr>" +
-      "</thead>" +
+      "<thead><tr><th>Name</th><th>Type</th><th>Size</th><th>Actions</th></tr></thead>" +
       "<tbody>" +
       rows +
       "</tbody>" +
@@ -1046,14 +942,16 @@
     return renderComponent(state, body);
   }
 
-  function renderProgressList(state) {
+  function renderFileProgress(state) {
     var c = state.config;
 
     var body =
       '<div class="wf-up__field-stack">' +
       '<div class="wf-up__files-panel">' +
       '<div class="wf-up__files-header">' +
-      '<h3 class="wf-up__heading">Files (' +
+      '<h3 class="wf-up__heading">' +
+      escapeHtml(c.title || "Files") +
+      " (" +
       state.files.length +
       ")</h3>" +
       '<div class="wf-up__actions">' +
@@ -1101,14 +999,10 @@
       escapeHtml(options.title || "") +
       "</p>" +
       (options.description
-        ? '<p class="wf-up__drop-description">' +
-          escapeHtml(options.description) +
-          "</p>"
+        ? '<p class="wf-up__drop-description">' + escapeHtml(options.description) + "</p>"
         : "") +
       (options.helper
-        ? '<p class="wf-up__drop-helper">' +
-          escapeHtml(options.helper) +
-          "</p>"
+        ? '<p class="wf-up__drop-helper">' + escapeHtml(options.helper) + "</p>"
         : "") +
       (options.showButton
         ? renderActionButton(
@@ -1139,7 +1033,7 @@
       '">' +
       renderIcon(icon || "upload", c) +
       "<span>" +
-      escapeHtml(text) +
+      escapeHtml(text || "") +
       "</span>" +
       "</button>"
     );
@@ -1154,7 +1048,12 @@
       '<h3 class="wf-up__heading">Uploaded Files (' +
       state.files.length +
       ")</h3>" +
+      '<div class="wf-up__actions">' +
       renderActionButton(c.addMoreText, c, "sm", "upload") +
+      (state.files.length
+        ? renderActionButton(c.removeAllText, c, "sm", "trash", "remove-all")
+        : "") +
+      "</div>" +
       "</div>" +
       '<div class="wf-up__image-grid">' +
       state.files.map(function (file) {
@@ -1177,9 +1076,9 @@
       '<p class="wf-up__drop-title">' +
       escapeHtml(c.title) +
       "</p>" +
-      '<p class="wf-up__drop-description">' +
-      escapeHtml(c.description) +
-      "</p>" +
+      (c.description
+        ? '<p class="wf-up__drop-description">' + escapeHtml(c.description) + "</p>"
+        : "") +
       renderActionButton(c.buttonText, c, "md", "upload", "open", "wf-up__button--drop") +
       "</div>" +
       '<div class="wf-up__image-list">' +
@@ -1205,9 +1104,9 @@
       '<p class="wf-up__drop-title">' +
       escapeHtml(c.title) +
       "</p>" +
-      '<p class="wf-up__drop-description">' +
-      escapeHtml(c.description) +
-      "</p>" +
+      (c.description
+        ? '<p class="wf-up__drop-description">' + escapeHtml(c.description) + "</p>"
+        : "") +
       '<p class="wf-up__drop-helper">' +
       escapeHtml(c.helperText || buildDefaultHelper(c)) +
       "</p>" +
@@ -1243,11 +1142,7 @@
     return (
       '<div class="wf-up__image-grid-item">' +
       (file.previewUrl
-        ? '<img src="' +
-          escapeAttr(file.previewUrl) +
-          '" alt="' +
-          escapeAttr(file.name) +
-          '">'
+        ? '<img src="' + escapeAttr(file.previewUrl) + '" alt="' + escapeAttr(file.name) + '">'
         : renderIcon("image", c)) +
       renderFloatingRemoveButton(file, c) +
       "</div>"
@@ -1259,11 +1154,7 @@
       '<div class="wf-up__image-row">' +
       '<div class="wf-up__image-thumb">' +
       (file.previewUrl
-        ? '<img src="' +
-          escapeAttr(file.previewUrl) +
-          '" alt="' +
-          escapeAttr(file.name) +
-          '">'
+        ? '<img src="' + escapeAttr(file.previewUrl) + '" alt="' + escapeAttr(file.name) + '">'
         : renderIcon("image", c)) +
       "</div>" +
       '<div class="wf-up__file-info">' +
@@ -1425,7 +1316,6 @@
 
   function renderError(state) {
     if (!state.error) return "";
-
     return '<div class="wf-up__error">' + escapeHtml(state.error) + "</div>";
   }
 
@@ -1436,9 +1326,11 @@
   function renderStatus(file, c) {
     if (file.status === "pending") return escapeHtml(c.waitingText);
     if (file.status === "signing") return escapeHtml(c.preparingText);
+
     if (file.status === "uploading") {
       return escapeHtml(c.uploadingText) + " " + (file.progress || 0) + "%";
     }
+
     if (file.status === "uploaded") return escapeHtml(c.successText);
     if (file.status === "error") return escapeHtml(file.error || c.errorText);
 
@@ -1447,12 +1339,11 @@
 
   function iconForFile(file) {
     if (isImageType(file.type)) return "image";
+
     var ext = getFileExtension(file.name).toLowerCase();
 
     if (ext === "zip" || ext === "rar" || ext === "7z") return "archive";
     if (ext === "mp3" || ext === "wav" || ext === "m4a") return "audio";
-    if (ext === "pdf") return "file";
-    if (ext === "xlsx" || ext === "xls" || ext === "csv") return "file";
 
     return "file";
   }
@@ -1571,7 +1462,6 @@
 
   function attr(el, name, fallback) {
     var value = el.getAttribute(name);
-
     return value === null || value === "" ? fallback : value;
   }
 
@@ -1621,7 +1511,6 @@
 
   function getFileExtension(name) {
     var parts = String(name || "").split(".");
-
     return parts.length > 1 ? parts.pop().toUpperCase() : "FILE";
   }
 
