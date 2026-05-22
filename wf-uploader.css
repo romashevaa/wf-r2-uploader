@@ -124,6 +124,7 @@
 .wf-up__component,
 .wf-up__field-stack,
 .wf-up__center-stack,
+.wf-up__relative,
 .wf-up__files-content,
 .wf-up__files-panel,
 .wf-up__table-card,
@@ -134,7 +135,8 @@
 }
 
 .wf-up__component,
-.wf-up__field-stack {
+.wf-up__field-stack,
+.wf-up__relative {
   height: 100%;
   min-height: 0;
 }
@@ -164,12 +166,20 @@
   min-height: 0;
 }
 
-.wf-up__relative,
-.wf-up__relative-inline {
+.wf-up__relative {
   position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.wf-up__relative > .wf-up__drop-area {
+  flex: 1;
+  height: 100%;
+  min-height: 0;
 }
 
 .wf-up__relative-inline {
+  position: relative;
   display: inline-block;
   max-width: 100%;
 }
