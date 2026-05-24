@@ -1,7 +1,32 @@
 /* WebFolks File Uploader
-   Final 8-variant CSS.
+   4 layouts (button, dropzone, list, table) driven by attributes.
    Webflow wrapper controls: width, max-width, background, outer padding, border, radius, height.
-*/
+
+   ---------------------------------------------------------------------------
+   Customization tokens (override on the .wf-up element or any ancestor):
+
+     --wf-up-fg                 Text & icon color (defaults to currentColor)
+     --wf-up-muted              Secondary text (descriptions, status)
+     --wf-up-muted-weak         Tertiary text (helper line)
+     --wf-up-border             Drop-area & button border
+     --wf-up-border-strong      Border on focus / hover-strong states
+     --wf-up-accent             Hover / dragging background tint
+     --wf-up-accent-strong      Stronger accent (reserved)
+     --wf-up-surface            Panel surface background
+     --wf-up-primary-bg         Floating remove button background
+     --wf-up-primary-fg         Floating remove button color
+     --wf-up-error              Error text color
+     --wf-up-success            Success text color
+     --wf-up-radius             Buttons / file rows / table radius
+     --wf-up-radius-lg          Drop area radius
+     --wf-up-ring               Focus ring color
+     --wf-up-shadow-xs          Button shadow
+     --wf-up-transition         Shared transition timing
+     --wf-up-floating-remove-ring  Outline color on the floating remove badge
+
+   Quick recolor for a Webflow site:
+     .wf-up { --wf-up-accent: #fff5eb; --wf-up-radius: 4px; }
+   --------------------------------------------------------------------------- */
 
 /* -------------------------------------------------------------------------- */
 /* Webflow embed pseudo-element fix                                            */
@@ -49,6 +74,8 @@
   --wf-up-ring: color-mix(in srgb, currentColor 18%, transparent);
 
   --wf-up-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --wf-up-transition: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --wf-up-floating-remove-ring: #ffffff;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -105,10 +132,17 @@
 }
 
 .wf-up__custom-icon {
-  display: block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: 16px;
   height: 16px;
   object-fit: contain;
+}
+
+.wf-up__custom-icon > svg {
+  width: 100%;
+  height: 100%;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -214,10 +248,10 @@
   background: transparent;
   outline: none;
   transition:
-    color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
-    background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
-    border-color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
-    box-shadow 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    color var(--wf-up-transition),
+    background-color var(--wf-up-transition),
+    border-color var(--wf-up-transition),
+    box-shadow var(--wf-up-transition);
 }
 
 .wf-up__drop-area[data-wf-up-dropzone] {
@@ -250,11 +284,11 @@
   min-height: 208px;
 }
 
-.wf-up--file-list:not(:has(.wf-up__drop-area[data-files="true"])) .wf-up__drop-area--large {
+.wf-up--list:not(:has(.wf-up__drop-area[data-files="true"])) .wf-up__drop-area--large {
   min-height: 160px;
 }
 
-.wf-up--file-single .wf-up__drop-area--compact:not(:has(.wf-up__file-row)) {
+.wf-up--dropzone .wf-up__drop-area--compact:not(:has(.wf-up__file-row)) {
   min-height: 128px;
 }
 
@@ -265,7 +299,7 @@
 .wf-up__drop-area:has(.wf-up__image-row),
 .wf-up__drop-area:has(.wf-up__image-grid),
 .wf-up__drop-area:has(.wf-up__file-list) {
-  transition: border-color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: border-color var(--wf-up-transition);
 }
 
 .wf-up__drop-area[data-files="true"]:hover,
@@ -398,11 +432,11 @@
   white-space: nowrap;
   outline: none;
   transition:
-    color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
-    background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
-    border-color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
-    box-shadow 0.15s cubic-bezier(0.4, 0, 0.2, 1),
-    opacity 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    color var(--wf-up-transition),
+    background-color var(--wf-up-transition),
+    border-color var(--wf-up-transition),
+    box-shadow var(--wf-up-transition),
+    opacity var(--wf-up-transition);
 }
 
 .wf-up__button:hover {
@@ -490,10 +524,10 @@
   color: var(--wf-up-fg);
   outline: none;
   transition:
-    color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
-    background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
-    border-color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
-    box-shadow 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    color var(--wf-up-transition),
+    background-color var(--wf-up-transition),
+    border-color var(--wf-up-transition),
+    box-shadow var(--wf-up-transition);
 }
 
 .wf-up__avatar-button:hover,
@@ -753,10 +787,10 @@
   padding: 0;
   outline: none;
   transition:
-    color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
-    background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
-    box-shadow 0.15s cubic-bezier(0.4, 0, 0.2, 1),
-    opacity 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    color var(--wf-up-transition),
+    background-color var(--wf-up-transition),
+    box-shadow var(--wf-up-transition),
+    opacity var(--wf-up-transition);
 }
 
 .wf-up__icon-button {
@@ -791,7 +825,7 @@
   z-index: 2;
   width: 24px;
   height: 24px;
-  border: 2px solid #ffffff;
+  border: 2px solid var(--wf-up-floating-remove-ring);
   border-radius: 999px;
   background: var(--wf-up-primary-bg);
   color: var(--wf-up-primary-fg);
@@ -921,7 +955,7 @@
 /* Variant-specific refinements                                                */
 /* -------------------------------------------------------------------------- */
 
-.wf-up--image-single .wf-up__single-summary {
+.wf-up--dropzone .wf-up__single-summary {
   margin-top: 4px;
 }
 

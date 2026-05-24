@@ -3,122 +3,101 @@
 
   var ROOT_SELECTOR = '[upload="file"]';
 
-  var VARIANT_ALIASES = {
-    minimal: "image-button",
-    "image-dropzone": "image-list",
-
-    "file-card": "file-single",
-    "file-dropzone": "file-list",
-    "file-list-inside": "file-list",
-
-    /* Old progress variant now falls back to normal file list */
-    "progress-list": "file-list",
-    "file-progress": "file-list",
+  /* The only real "variants" are layouts. Behavior is driven by attributes. */
+  var LAYOUTS = {
+    button: renderButton,
+    dropzone: renderDropzone,
+    list: renderList,
+    table: renderTable,
   };
 
-  var VARIANTS = {
-    "image-button": renderImageButton,
-    avatar: renderAvatar,
-    "image-single": renderImageSingle,
-    "image-list": renderImageList,
-    "image-grid": renderImageGrid,
-
-    "file-single": renderFileSingle,
-    "file-list": renderFileList,
-    "file-table": renderFileTable,
-  };
-
-  var VARIANT_COPY = {
-    "image-button": {
-      title: "Basic image uploader",
-      buttonText: "Upload image",
-      accept: "image/*",
-      maxSizeMb: 5,
-      maxFiles: 1,
+  var LAYOUT_DEFAULTS = {
+    button: {
+      title: "",
+      buttonText: "Upload",
       multiple: false,
+      maxFiles: 1,
+      maxSizeMb: 5,
+      accept: "any",
+      shape: "square",
       icon: "avatar",
     },
-
-    avatar: {
-      title: "Avatar uploader",
-      buttonText: "Upload image",
-      accept: "image/*",
-      maxSizeMb: 5,
-      maxFiles: 1,
-      multiple: false,
-      icon: "avatar",
-    },
-
-    "image-single": {
-      title: "Drop your image here",
-      description: "SVG, PNG, JPG or GIF (max. 2MB)",
-      buttonText: "Select image",
-      accept: "image/svg+xml,image/png,image/jpeg,image/jpg,image/gif",
-      maxSizeMb: 2,
-      maxFiles: 1,
-      multiple: false,
-      icon: "image",
-    },
-
-    "image-list": {
-      title: "Drop your images here",
-      description: "SVG, PNG, JPG or GIF (max. 5MB)",
-      buttonText: "Select images",
-      addMoreText: "Add more",
-      removeAllText: "Remove all files",
-      accept: "image/svg+xml,image/png,image/jpeg,image/jpg,image/gif",
-      maxSizeMb: 5,
-      maxFiles: 10,
-      multiple: true,
-      icon: "image",
-    },
-
-    "image-grid": {
-      title: "Drop your images here",
-      description: "SVG, PNG, JPG or GIF (max. 5MB)",
-      buttonText: "Select images",
-      addMoreText: "Add more",
-      removeAllText: "Remove all files",
-      accept: "image/svg+xml,image/png,image/jpeg,image/jpg,image/gif",
-      maxSizeMb: 5,
-      maxFiles: 10,
-      multiple: true,
-      icon: "image",
-    },
-
-    "file-single": {
-      title: "Upload file",
-      description: "Drag & drop or click to browse (max. 10MB)",
-      buttonText: "Upload file",
-      maxSizeMb: 10,
-      maxFiles: 1,
-      multiple: false,
-      icon: "file",
-    },
-
-    "file-list": {
-      title: "Upload files",
+    dropzone: {
+      title: "Drop your file here",
       description: "Drag & drop or click to browse",
-      helperText: "All files ∙ Max 10 files ∙ Up to 100MB",
-      buttonText: "Add files",
-      addMoreText: "Add files",
-      removeAllText: "Remove all",
-      maxSizeMb: 100,
-      maxFiles: 10,
-      multiple: true,
+      buttonText: "Select file",
+      multiple: false,
+      maxFiles: 1,
+      maxSizeMb: 10,
+      accept: "any",
+      size: "large",
       icon: "upload",
     },
-
-    "file-table": {
+    list: {
+      title: "Drop your files here",
+      description: "Drag & drop or click to browse",
+      buttonText: "Select files",
+      addMoreText: "Add more",
+      removeAllText: "Remove all",
+      multiple: true,
+      maxFiles: 10,
+      maxSizeMb: 100,
+      accept: "any",
+      listStyle: "rows",
+      icon: "upload",
+    },
+    table: {
       title: "Files",
       buttonText: "Add files",
       addFilesText: "Add files",
       removeAllText: "Remove all",
-      maxSizeMb: 100,
-      maxFiles: 10,
       multiple: true,
+      maxFiles: 10,
+      maxSizeMb: 100,
+      accept: "any",
       icon: "file",
     },
+  };
+
+  /* Friendly names for `data-wf-up-accept`. Anything not in this map is */
+  /* passed through as a raw MIME / extension list. */
+  var ACCEPT_PRESETS = {
+    image: "image/svg+xml,image/png,image/jpeg,image/gif,image/webp",
+    document: ".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv",
+    media: "image/*,video/*,audio/*",
+    video: "video/*",
+    audio: "audio/*",
+    any: "",
+  };
+
+  /* Backwards-compatible aliases for the old 8-variant API. */
+  /* Values are either another alias key (string) or a config patch (object). */
+  var VARIANT_MIGRATIONS = {
+    "image-button": { variant: "button", accept: "image", multiple: false, shape: "square", icon: "avatar" },
+    avatar:         { variant: "button", accept: "image", multiple: false, shape: "circle", icon: "avatar" },
+
+    "image-single": { variant: "dropzone", accept: "image", multiple: false, size: "large",   icon: "image-up", preview: true,
+                      title: "Drop your image here", description: "SVG, PNG, JPG or GIF (max. 2MB)", buttonText: "Select image", maxSizeMb: 2 },
+    "image-list":   { variant: "list",     accept: "image", multiple: true,  listStyle: "rows", icon: "image", preview: true,
+                      title: "Drop your images here", description: "SVG, PNG, JPG or GIF (max. 5MB)", buttonText: "Select images", maxSizeMb: 5 },
+    "image-grid":   { variant: "list",     accept: "image", multiple: true,  listStyle: "grid", icon: "image", preview: true,
+                      title: "Drop your images here", description: "SVG, PNG, JPG or GIF (max. 5MB)", buttonText: "Select images", maxSizeMb: 5 },
+
+    "file-single":  { variant: "dropzone", accept: "any", multiple: false, size: "compact", icon: "file",
+                      title: "Upload file", description: "Drag & drop or click to browse (max. 10MB)", buttonText: "Upload file" },
+    "file-list":    { variant: "list",     accept: "any", multiple: true,  listStyle: "rows", icon: "upload",
+                      title: "Upload files", description: "Drag & drop or click to browse",
+                      helperText: "All files ∙ Max 10 files ∙ Up to 100MB", buttonText: "Add files" },
+    "file-table":   { variant: "table",    accept: "any", multiple: true,  icon: "file" },
+
+    /* Older aliases that resolve through the chain. */
+    minimal:            "image-button",
+    "image-dropzone":   "image-list",
+    "file-card":        "file-single",
+    "file-dropzone":    "file-list",
+    "file-list-inside": "file-list",
+    "progress-list":    "file-list",
+    "file-progress":    "file-list",
   };
 
   ready(function () {
@@ -154,6 +133,12 @@
     root.classList.add("wf-up");
     root.classList.add("wf-up--" + config.variant);
     root.setAttribute("data-wf-up-ready", "true");
+    root.setAttribute("data-wf-up-layout", config.variant);
+    if (config.shape) root.setAttribute("data-wf-up-shape", config.shape);
+    if (config.size) root.setAttribute("data-wf-up-size", config.size);
+    if (config.listStyle) root.setAttribute("data-wf-up-list-style", config.listStyle);
+    if (config.preview) root.setAttribute("data-wf-up-preview", "true");
+    if (config.acceptPreset) root.setAttribute("data-wf-up-accept-preset", config.acceptPreset);
 
     root.innerHTML =
       '<input class="wf-up__native-input" type="file" hidden data-wf-up-native-input>' +
@@ -192,24 +177,37 @@
   }
 
   function readConfig(root) {
-    var variant = normalizeVariant(attr(root, "data-wf-up-variant", "file-list"));
-    var copy = VARIANT_COPY[variant] || {};
-    var maxFiles = numberAttr(root, "data-wf-up-max-files", copy.maxFiles || 1);
-    var maxSizeMb = numberAttr(root, "data-wf-up-max-size-mb", copy.maxSizeMb || 10);
+    var resolved = resolveVariant(attr(root, "data-wf-up-variant", "list"));
+    var variant = resolved.variant;
+    var defaults = LAYOUT_DEFAULTS[variant] || {};
+    var migration = resolved.migration || {};
+
+    function pick(key) {
+      return migration[key] !== undefined ? migration[key] : defaults[key];
+    }
+
+    var maxFiles = numberAttr(root, "data-wf-up-max-files", pick("maxFiles") || 1);
+    var maxSizeMb = numberAttr(root, "data-wf-up-max-size-mb", pick("maxSizeMb") || 10);
+
+    var rawAccept = attr(root, "data-wf-up-accept", pick("accept") || "any");
+    var resolvedAccept = ACCEPT_PRESETS[rawAccept] !== undefined
+      ? ACCEPT_PRESETS[rawAccept]
+      : rawAccept;
+    var acceptPreset = ACCEPT_PRESETS[rawAccept] !== undefined ? rawAccept : "";
 
     return {
       endpoint: attr(root, "data-wf-up-endpoint", ""),
       variant: variant,
 
-      title: attr(root, "data-wf-up-title", copy.title || "Upload files"),
-      description: attr(root, "data-wf-up-description", copy.description || ""),
-      helperText: attr(root, "data-wf-up-helper-text", copy.helperText || ""),
-      buttonText: attr(root, "data-wf-up-button-text", copy.buttonText || "Add files"),
+      title: attr(root, "data-wf-up-title", pick("title") || ""),
+      description: attr(root, "data-wf-up-description", pick("description") || ""),
+      helperText: attr(root, "data-wf-up-helper-text", pick("helperText") || ""),
+      buttonText: attr(root, "data-wf-up-button-text", pick("buttonText") || "Add files"),
 
-      addMoreText: attr(root, "data-wf-up-add-more-text", copy.addMoreText || "Add more"),
-      addFilesText: attr(root, "data-wf-up-add-files-text", copy.addFilesText || "Add files"),
+      addMoreText: attr(root, "data-wf-up-add-more-text", pick("addMoreText") || "Add more"),
+      addFilesText: attr(root, "data-wf-up-add-files-text", pick("addFilesText") || "Add files"),
       removeText: attr(root, "data-wf-up-remove-text", "Remove"),
-      removeAllText: attr(root, "data-wf-up-remove-all-text", copy.removeAllText || "Remove all"),
+      removeAllText: attr(root, "data-wf-up-remove-all-text", pick("removeAllText") || "Remove all"),
       emptyText: attr(root, "data-wf-up-empty-text", "No file chosen"),
 
       uploadingText: attr(root, "data-wf-up-uploading-text", "Uploading"),
@@ -219,14 +217,32 @@
       errorText: attr(root, "data-wf-up-error-text", "Something went wrong. Please try again."),
       requiredText: attr(root, "data-wf-up-required-text", "Please upload a file."),
 
-      accept: attr(root, "data-wf-up-accept", copy.accept || ""),
+      accept: resolvedAccept,
+      acceptPreset: acceptPreset,
       maxSizeMb: maxSizeMb,
       maxFiles: maxFiles,
       multiple: boolAttr(
         root,
         "data-wf-up-multiple",
-        copy.multiple !== undefined ? copy.multiple : maxFiles > 1
+        migration.multiple !== undefined
+          ? migration.multiple
+          : defaults.multiple !== undefined
+          ? defaults.multiple
+          : maxFiles > 1
       ),
+
+      /* Layout sub-options */
+      shape: attr(root, "data-wf-up-shape", pick("shape") || ""),
+      size: attr(root, "data-wf-up-size", pick("size") || ""),
+      listStyle: attr(root, "data-wf-up-list-style", pick("listStyle") || ""),
+      preview: boolAttr(
+        root,
+        "data-wf-up-preview",
+        migration.preview !== undefined
+          ? migration.preview
+          : acceptPreset === "image" || acceptPreset === "media"
+      ),
+      icon: attr(root, "data-wf-up-icon", pick("icon") || "upload"),
 
       folder: attr(root, "data-wf-up-folder", "uploads"),
       fieldName: attr(root, "data-wf-up-field-name", "uploaded_files"),
@@ -236,22 +252,52 @@
       allowRemove: boolAttr(root, "data-wf-up-allow-remove", true),
       required: boolAttr(root, "data-wf-up-required", false),
 
+      /* Visibility toggles for empty-state pieces */
+      showIcon: boolAttr(root, "data-wf-up-show-icon", true),
+      showTitle: boolAttr(root, "data-wf-up-show-title", true),
+      showDescription: boolAttr(root, "data-wf-up-show-description", true),
+      showHelper: boolAttr(root, "data-wf-up-show-helper", true),
+      showButton: boolAttr(root, "data-wf-up-show-button", true),
+
+      /* Per-role icon overrides. Each accepts: preset name, URL, or inline SVG/HTML */
       iconUpload: attr(root, "data-wf-up-icon-upload", ""),
       iconFile: attr(root, "data-wf-up-icon-file", ""),
       iconImage: attr(root, "data-wf-up-icon-image", ""),
       iconRemove: attr(root, "data-wf-up-icon-remove", ""),
+      iconRemoveAll: attr(root, "data-wf-up-icon-remove-all", ""),
     };
   }
 
-  function normalizeVariant(value) {
-    var normalized = VARIANT_ALIASES[value] || value;
-    return VARIANTS[normalized] ? normalized : "file-list";
+  /* Walk the migration chain. A value can be another alias key (string) or */
+  /* a config patch object whose `variant` is a real layout name. */
+  function resolveVariant(rawValue) {
+    var value = rawValue || "";
+    var migration = null;
+    var seen = {};
+
+    while (VARIANT_MIGRATIONS[value] !== undefined && !seen[value]) {
+      seen[value] = true;
+      var entry = VARIANT_MIGRATIONS[value];
+
+      if (typeof entry === "string") {
+        value = entry;
+        continue;
+      }
+
+      migration = entry;
+      value = entry.variant;
+      break;
+    }
+
+    if (!LAYOUTS[value]) value = "list";
+
+    return { variant: value, migration: migration };
   }
 
   function render(state) {
     if (!state.view) return;
 
-    var renderer = VARIANTS[state.config.variant] || renderFileList;
+    var renderer = LAYOUTS[state.config.variant] || renderList;
 
     state.view.innerHTML = renderer(state);
 
@@ -729,17 +775,36 @@
   /* Renderers                                                                  */
   /* -------------------------------------------------------------------------- */
 
-  function renderImageButton(state) {
+  /* ---- button layout (compact trigger; was image-button / avatar) -------- */
+  function renderButton(state) {
     var c = state.config;
     var file = state.files[0];
+    var hasImage = file && file.previewUrl;
 
-    var body =
+    if (c.shape === "circle") {
+      var body =
+        '<div class="wf-up__center-stack">' +
+        '<div class="wf-up__relative-inline">' +
+        '<button class="wf-up__avatar-button" type="button" data-wf-up-action="open" aria-label="' +
+        escapeAttr(c.buttonText) +
+        '">' +
+        (hasImage
+          ? '<img src="' + escapeAttr(file.previewUrl) + '" alt="' + escapeAttr(file.name) + '">'
+          : renderIcon(c.icon || "avatar", c)) +
+        "</button>" +
+        "</div>" +
+        "</div>";
+
+      return renderComponent(state, body);
+    }
+
+    var bodySquare =
       '<div class="wf-up__center-stack">' +
       '<div class="wf-up__inline-row">' +
-      '<div class="wf-up__avatar-icon" aria-label="Default user avatar">' +
-      (file && file.previewUrl
+      '<div class="wf-up__avatar-icon" aria-hidden="true">' +
+      (hasImage
         ? '<img src="' + escapeAttr(file.previewUrl) + '" alt="' + escapeAttr(file.name) + '">'
-        : renderIcon("avatar", c)) +
+        : renderIcon(c.icon || "avatar", c)) +
       "</div>" +
       '<div class="wf-up__relative-inline">' +
       renderActionButton(c.buttonText, c, "md", "upload") +
@@ -747,152 +812,98 @@
       "</div>" +
       "</div>";
 
-    return renderComponent(state, body);
+    return renderComponent(state, bodySquare);
   }
 
-  function renderAvatar(state) {
+  /* ---- dropzone layout (was image-single / file-single) ------------------ */
+  function renderDropzone(state) {
     var c = state.config;
-    var file = state.files[0];
+    var hasFiles = state.files.length > 0;
+    var sizeClass =
+      c.size === "compact"
+        ? "wf-up__drop-area--compact"
+        : "wf-up__drop-area--large";
 
-    var body =
-      '<div class="wf-up__center-stack">' +
-      '<div class="wf-up__relative-inline">' +
-      '<button class="wf-up__avatar-button" data-wf-up-action="open" aria-label="' +
-      escapeAttr(c.buttonText) +
-      '">' +
-      (file && file.previewUrl
-        ? '<img src="' + escapeAttr(file.previewUrl) + '" alt="' + escapeAttr(file.name) + '">'
-        : renderIcon("avatar", c)) +
-      "</button>" +
-      "</div>" +
-      "</div>";
+    var firstFile = state.files[0];
+    var showImagePreview =
+      c.preview &&
+      hasFiles &&
+      firstFile &&
+      firstFile.previewUrl &&
+      !c.multiple;
 
-    return renderComponent(state, body);
-  }
-
-  function renderImageSingle(state) {
-    var c = state.config;
-    var file = state.files[0];
+    var inner;
+    if (!hasFiles) {
+      inner = renderDropContent(c, {
+        icon: c.icon,
+        title: c.title,
+        description: c.description,
+        helper: c.helperText,
+        buttonText: c.buttonText,
+        showButton: true,
+      });
+    } else if (showImagePreview) {
+      inner = renderSingleImagePreview(firstFile, c);
+    } else {
+      inner = renderFileCardList(state);
+    }
 
     var body =
       '<div class="wf-up__field-stack">' +
       '<div class="wf-up__relative">' +
-      '<div class="wf-up__drop-area wf-up__drop-area--large' +
-      (file && file.previewUrl ? " has-file" : "") +
-      '" data-wf-up-dropzone role="button" tabindex="-1">' +
-      (file && file.previewUrl
-        ? renderSingleImagePreview(file, c)
-        : renderDropContent(c, {
-            icon: "image-up",
-            title: c.title,
-            description: c.description,
-            buttonText: c.buttonText,
-            showButton: true,
-          })) +
+      '<div class="wf-up__drop-area ' +
+      sizeClass +
+      (showImagePreview ? " has-file" : "") +
+      '" data-wf-up-dropzone' +
+      (hasFiles && !showImagePreview ? ' data-files="true"' : "") +
+      ">" +
+      inner +
       "</div>" +
       "</div>" +
-      (file ? renderSingleFileSummary(file, c) : "") +
+      (showImagePreview && firstFile
+        ? renderSingleFileSummary(firstFile, c)
+        : "") +
       "</div>";
 
     return renderComponent(state, body);
   }
 
-  function renderImageList(state) {
+  /* ---- list layout (was image-list / image-grid / file-list) ------------- */
+  function renderList(state) {
     var c = state.config;
     var hasFiles = state.files.length > 0;
+    var isGrid = c.listStyle === "grid";
+
+    var inner;
+    if (!hasFiles) {
+      inner = renderDropContent(c, {
+        icon: c.icon,
+        title: c.title,
+        description: c.description,
+        helper: c.helperText || buildDefaultHelper(c),
+        buttonText: c.buttonText,
+        showButton: true,
+      });
+    } else if (isGrid) {
+      inner = renderListGridContent(state);
+    } else {
+      inner = renderListRowsContent(state);
+    }
 
     var body =
       '<div class="wf-up__field-stack">' +
-      '<div class="wf-up__drop-area wf-up__drop-area--large" data-wf-up-dropzone ' +
-      (hasFiles ? 'data-files="true"' : "") +
+      '<div class="wf-up__drop-area wf-up__drop-area--large" data-wf-up-dropzone' +
+      (hasFiles ? ' data-files="true"' : "") +
       ">" +
-      (hasFiles
-        ? renderImageListContent(state)
-        : renderDropContent(c, {
-            icon: "image",
-            title: c.title,
-            description: c.description,
-            buttonText: c.buttonText,
-            showButton: true,
-          })) +
+      inner +
       "</div>" +
       "</div>";
 
     return renderComponent(state, body);
   }
 
-  function renderImageGrid(state) {
-    var c = state.config;
-    var hasFiles = state.files.length > 0;
-
-    var body =
-      '<div class="wf-up__field-stack">' +
-      '<div class="wf-up__drop-area wf-up__drop-area--large" data-wf-up-dropzone ' +
-      (hasFiles ? 'data-files="true"' : "") +
-      ">" +
-      (hasFiles
-        ? renderImageGridContent(state)
-        : renderDropContent(c, {
-            icon: "image",
-            title: c.title,
-            description: c.description,
-            buttonText: c.buttonText,
-            showButton: true,
-          })) +
-      "</div>" +
-      "</div>";
-
-    return renderComponent(state, body);
-  }
-
-  function renderFileSingle(state) {
-    var c = state.config;
-    var file = state.files[0];
-
-    var body =
-      '<div class="wf-up__field-stack">' +
-      '<div class="wf-up__drop-area wf-up__drop-area--compact" data-wf-up-dropzone>' +
-      (file
-        ? renderFileCardList(state)
-        : renderDropContent(c, {
-            icon: "file",
-            title: c.title,
-            description: c.description,
-            buttonText: c.buttonText,
-            showButton: true,
-          })) +
-      "</div>" +
-      "</div>";
-
-    return renderComponent(state, body);
-  }
-
-  function renderFileList(state) {
-    var c = state.config;
-    var hasFiles = state.files.length > 0;
-
-    var body =
-      '<div class="wf-up__field-stack">' +
-      '<div class="wf-up__drop-area wf-up__drop-area--large" data-wf-up-dropzone ' +
-      (hasFiles ? 'data-files="true"' : "") +
-      ">" +
-      (hasFiles
-        ? renderFileListContent(state)
-        : renderDropContent(c, {
-            icon: "upload",
-            title: c.title,
-            description: c.description,
-            helper: c.helperText,
-            buttonText: c.buttonText,
-            showButton: false,
-          })) +
-      "</div>" +
-      "</div>";
-
-    return renderComponent(state, body);
-  }
-
-  function renderFileTable(state) {
+  /* ---- table layout ------------------------------------------------------ */
+  function renderTable(state) {
     var c = state.config;
 
     var rows = state.files.length
@@ -949,21 +960,32 @@
   }
 
   function renderDropContent(c, options) {
+    var showIcon = c.showIcon !== false;
+    var showTitle = c.showTitle !== false && !!options.title;
+    var showDescription =
+      c.showDescription !== false && !!options.description;
+    var showHelper = c.showHelper !== false && !!options.helper;
+    var showButton = c.showButton !== false && options.showButton !== false;
+
     return (
       '<div class="wf-up__drop-content">' +
-      '<div class="wf-up__drop-icon" aria-hidden="true">' +
-      renderIcon(options.icon || c.icon || "upload", c) +
-      "</div>" +
-      '<p class="wf-up__drop-title">' +
-      escapeHtml(options.title || "") +
-      "</p>" +
-      (options.description
-        ? '<p class="wf-up__drop-description">' + escapeHtml(options.description) + "</p>"
+      (showIcon
+        ? '<div class="wf-up__drop-icon" aria-hidden="true">' +
+          renderIcon(options.icon || c.icon || "upload", c) +
+          "</div>"
         : "") +
-      (options.helper
+      (showTitle
+        ? '<p class="wf-up__drop-title">' + escapeHtml(options.title) + "</p>"
+        : "") +
+      (showDescription
+        ? '<p class="wf-up__drop-description">' +
+          escapeHtml(options.description) +
+          "</p>"
+        : "") +
+      (showHelper
         ? '<p class="wf-up__drop-helper">' + escapeHtml(options.helper) + "</p>"
         : "") +
-      (options.showButton
+      (showButton
         ? renderActionButton(
             options.buttonText || c.buttonText,
             c,
@@ -998,13 +1020,15 @@
     );
   }
 
-  function renderImageGridContent(state) {
+  function renderListGridContent(state) {
     var c = state.config;
 
     return (
       '<div class="wf-up__files-content">' +
       '<div class="wf-up__files-header">' +
-      '<h3 class="wf-up__heading">Uploaded Files (' +
+      '<h3 class="wf-up__heading">' +
+      escapeHtml(c.title || "Uploaded files") +
+      " (" +
       state.files.length +
       ")</h3>" +
       '<div class="wf-up__actions">' +
@@ -1023,60 +1047,47 @@
     );
   }
 
-  function renderImageListContent(state) {
+  function renderListRowsContent(state) {
     var c = state.config;
+    var rowFn = c.preview ? renderImageListRow : renderFileRow;
+    var listClass = c.preview ? "wf-up__image-list" : "wf-up__file-list";
+
+    var showIcon = c.showIcon !== false && c.preview;
+    var showTitle = c.showTitle !== false && !!c.title;
+    var showDescription = c.showDescription !== false && !!c.description;
+    var showHelper = c.showHelper !== false && !!c.helperText;
+    var showButton = c.showButton !== false && c.preview;
 
     return (
       '<div class="wf-up__files-content">' +
       '<div class="wf-up__drop-content wf-up__drop-content--compact">' +
-      '<div class="wf-up__drop-icon" aria-hidden="true">' +
-      renderIcon("image", c) +
-      "</div>" +
-      '<p class="wf-up__drop-title">' +
-      escapeHtml(c.title) +
-      "</p>" +
-      (c.description
-        ? '<p class="wf-up__drop-description">' + escapeHtml(c.description) + "</p>"
-        : "") +
-      renderActionButton(c.buttonText, c, "md", "upload", "open", "wf-up__button--drop") +
-      "</div>" +
-      '<div class="wf-up__image-list">' +
-      state.files.map(function (file) {
-        return renderImageListRow(file, c);
-      }).join("") +
-      "</div>" +
-      (state.files.length
-        ? '<div class="wf-up__files-footer">' +
-          renderActionButton(c.removeAllText, c, "sm", "trash", "remove-all") +
+      (showIcon
+        ? '<div class="wf-up__drop-icon" aria-hidden="true">' +
+          renderIcon(c.icon || "image", c) +
           "</div>"
         : "") +
-      "</div>"
-    );
-  }
-
-  function renderFileListContent(state) {
-    var c = state.config;
-
-    return (
-      '<div class="wf-up__files-content">' +
-      '<div class="wf-up__drop-content wf-up__drop-content--compact">' +
-      '<p class="wf-up__drop-title">' +
-      escapeHtml(c.title) +
-      "</p>" +
-      (c.description
+      (showTitle
+        ? '<p class="wf-up__drop-title">' + escapeHtml(c.title) + "</p>"
+        : "") +
+      (showDescription
         ? '<p class="wf-up__drop-description">' + escapeHtml(c.description) + "</p>"
         : "") +
-      '<p class="wf-up__drop-helper">' +
-      escapeHtml(c.helperText || buildDefaultHelper(c)) +
-      "</p>" +
+      (showHelper
+        ? '<p class="wf-up__drop-helper">' + escapeHtml(c.helperText) + "</p>"
+        : "") +
+      (showButton
+        ? renderActionButton(c.buttonText, c, "md", "upload", "open", "wf-up__button--drop")
+        : "") +
       "</div>" +
-      '<div class="wf-up__file-list">' +
+      '<div class="' + listClass + '">' +
       state.files.map(function (file) {
-        return renderFileRow(file, c);
+        return rowFn(file, c);
       }).join("") +
       "</div>" +
       '<div class="wf-up__files-footer">' +
-      renderActionButton(c.addMoreText, c, "sm", "upload") +
+      (c.preview
+        ? ""
+        : renderActionButton(c.addMoreText, c, "sm", "upload")) +
       (state.files.length
         ? renderActionButton(c.removeAllText, c, "sm", "trash", "remove-all")
         : "") +
@@ -1225,7 +1236,7 @@
       '" aria-label="' +
       escapeAttr(c.removeText + " " + file.name) +
       '">' +
-      renderIcon(c.iconRemove ? "remove-custom" : "x", c) +
+      renderIcon("x", c) +
       "</button>"
     );
   }
@@ -1239,7 +1250,7 @@
       '" aria-label="' +
       escapeAttr(c.removeText + " image") +
       '">' +
-      renderIcon(c.iconRemove ? "remove-custom" : "x", c) +
+      renderIcon("x", c) +
       "</button>"
     );
   }
@@ -1278,112 +1289,113 @@
     return "file";
   }
 
-  function renderIcon(type, c) {
-    var url = "";
-
-    if (type === "upload") {
-      url = c.iconUpload;
-    } else if (type === "image" || type === "image-up") {
-      url = c.iconImage;
-    } else if (type === "remove-custom") {
-      url = c.iconRemove;
-    } else {
-      url = c.iconFile;
-    }
-
-    if (url) {
-      return '<img class="wf-up__custom-icon" src="' + escapeAttr(url) + '" alt="">';
-    }
-
-    if (type === "avatar") {
-      return (
-        '<svg viewBox="0 0 24 24" aria-hidden="true">' +
-        '<path d="M18 20a6 6 0 0 0-12 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' +
-        '<circle cx="12" cy="10" r="4" fill="none" stroke="currentColor" stroke-width="2"/>' +
-        '<circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>' +
-        "</svg>"
-      );
-    }
-
-    if (type === "image-up") {
-      return (
-        '<svg viewBox="0 0 24 24" aria-hidden="true">' +
-        '<path d="M10.3 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10l-3.1-3.1a2 2 0 0 0-2.814.014L6 21" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
-        '<path d="m14 19.5 3-3 3 3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
-        '<path d="M17 22v-5.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' +
-        '<circle cx="9" cy="9" r="2" fill="none" stroke="currentColor" stroke-width="2"/>' +
-        "</svg>"
-      );
-    }
-
-    if (type === "image") {
-      return (
-        '<svg viewBox="0 0 24 24" aria-hidden="true">' +
-        '<rect width="18" height="18" x="3" y="3" rx="2" ry="2" fill="none" stroke="currentColor" stroke-width="2"/>' +
-        '<circle cx="9" cy="9" r="2" fill="none" stroke="currentColor" stroke-width="2"/>' +
-        '<path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
-        "</svg>"
-      );
-    }
-
-    if (type === "x") {
-      return (
-        '<svg viewBox="0 0 24 24" aria-hidden="true">' +
-        '<path d="M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' +
-        '<path d="m6 6 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' +
-        "</svg>"
-      );
-    }
-
-    if (type === "trash") {
-      return (
-        '<svg viewBox="0 0 24 24" aria-hidden="true">' +
-        '<path d="M10 11v6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' +
-        '<path d="M14 11v6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' +
-        '<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
-        '<path d="M3 6h18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' +
-        '<path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
-        "</svg>"
-      );
-    }
-
-    if (type === "archive") {
-      return (
-        '<svg viewBox="0 0 24 24" aria-hidden="true">' +
-        '<path d="M10 12v-1M10 18v-2M10 7V6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' +
-        '<path d="M14 2v4a2 2 0 0 0 2 2h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
-        '<path d="M15.5 22H18a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v18h2.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
-        '<path d="M10 22a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z" fill="none" stroke="currentColor" stroke-width="2"/>' +
-        "</svg>"
-      );
-    }
-
-    if (type === "audio") {
-      return (
-        '<svg viewBox="0 0 24 24" aria-hidden="true">' +
-        '<path d="M9 18V5l12-2v13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
-        '<circle cx="6" cy="18" r="3" fill="none" stroke="currentColor" stroke-width="2"/>' +
-        '<circle cx="18" cy="16" r="3" fill="none" stroke="currentColor" stroke-width="2"/>' +
-        "</svg>"
-      );
-    }
-
-    if (type === "file") {
-      return (
-        '<svg viewBox="0 0 24 24" aria-hidden="true">' +
-        '<path d="M7 3h7l5 5v13H7V3Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>' +
-        '<path d="M14 3v5h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>' +
-        "</svg>"
-      );
-    }
-
-    return (
+  /* Built-in icon library. Designers reference these by name via */
+  /* `data-wf-up-icon-*="presetname"` overrides. */
+  var ICON_PRESETS = {
+    upload:
       '<svg viewBox="0 0 24 24" aria-hidden="true">' +
       '<path d="M12 3v12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' +
       '<path d="m17 8-5-5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
       '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
-      "</svg>"
-    );
+      "</svg>",
+    avatar:
+      '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+      '<path d="M18 20a6 6 0 0 0-12 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' +
+      '<circle cx="12" cy="10" r="4" fill="none" stroke="currentColor" stroke-width="2"/>' +
+      '<circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>' +
+      "</svg>",
+    "image-up":
+      '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+      '<path d="M10.3 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10l-3.1-3.1a2 2 0 0 0-2.814.014L6 21" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '<path d="m14 19.5 3-3 3 3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '<path d="M17 22v-5.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' +
+      '<circle cx="9" cy="9" r="2" fill="none" stroke="currentColor" stroke-width="2"/>' +
+      "</svg>",
+    image:
+      '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+      '<rect width="18" height="18" x="3" y="3" rx="2" ry="2" fill="none" stroke="currentColor" stroke-width="2"/>' +
+      '<circle cx="9" cy="9" r="2" fill="none" stroke="currentColor" stroke-width="2"/>' +
+      '<path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+      "</svg>",
+    x:
+      '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+      '<path d="M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' +
+      '<path d="m6 6 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' +
+      "</svg>",
+    trash:
+      '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+      '<path d="M10 11v6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' +
+      '<path d="M14 11v6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' +
+      '<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '<path d="M3 6h18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' +
+      '<path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+      "</svg>",
+    archive:
+      '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+      '<path d="M10 12v-1M10 18v-2M10 7V6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' +
+      '<path d="M14 2v4a2 2 0 0 0 2 2h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '<path d="M15.5 22H18a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v18h2.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '<path d="M10 22a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z" fill="none" stroke="currentColor" stroke-width="2"/>' +
+      "</svg>",
+    audio:
+      '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+      '<path d="M9 18V5l12-2v13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '<circle cx="6" cy="18" r="3" fill="none" stroke="currentColor" stroke-width="2"/>' +
+      '<circle cx="18" cy="16" r="3" fill="none" stroke="currentColor" stroke-width="2"/>' +
+      "</svg>",
+    file:
+      '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+      '<path d="M7 3h7l5 5v13H7V3Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>' +
+      '<path d="M14 3v5h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>' +
+      "</svg>",
+  };
+
+  /* Map a semantic type name to the per-role override config key. */
+  var ICON_ROLES = {
+    upload:     "iconUpload",
+    avatar:     "iconUpload",
+    image:      "iconImage",
+    "image-up": "iconImage",
+    file:       "iconFile",
+    archive:    "iconFile",
+    audio:      "iconFile",
+    x:          "iconRemove",
+    trash:      "iconRemoveAll",
+  };
+
+  function renderIcon(type, c) {
+    var roleKey = ICON_ROLES[type];
+    var override = roleKey && c ? c[roleKey] : "";
+
+    if (override) {
+      var resolved = resolveIcon(override);
+      if (resolved) return resolved;
+    }
+
+    return ICON_PRESETS[type] || ICON_PRESETS.upload;
+  }
+
+  /* Three-tier resolver for icon override values. */
+  /*  - inline SVG/HTML when string starts with "<"                      */
+  /*  - URL (http/https/data/blob/relative) → loads as <img>             */
+  /*  - otherwise treat as preset name (avatar / file / image / etc.)    */
+  function resolveIcon(value) {
+    var trimmed = String(value || "").trim();
+    if (!trimmed) return "";
+
+    if (trimmed.charAt(0) === "<") {
+      return '<span class="wf-up__custom-icon">' + trimmed + "</span>";
+    }
+
+    if (/^(https?:\/\/|\/|data:|blob:)/i.test(trimmed)) {
+      return (
+        '<img class="wf-up__custom-icon" src="' +
+        escapeAttr(trimmed) +
+        '" alt="">'
+      );
+    }
+
+    return ICON_PRESETS[trimmed] || "";
   }
 
   /* -------------------------------------------------------------------------- */
