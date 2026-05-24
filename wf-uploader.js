@@ -100,14 +100,6 @@
     "file-progress":    "file-list",
   };
 
-  ready(function () {
-    initAllUploaders();
-    initExternalControls();
-  });
-
-  window.WebflowUploader = window.WebflowUploader || {};
-  window.WebflowUploader.init = initAllUploaders;
-
   function initAllUploaders() {
     document.querySelectorAll(ROOT_SELECTOR).forEach(initUploader);
   }
@@ -1507,4 +1499,14 @@
       callback();
     }
   }
+
+  /* Bootstrap last: all `var X = {...}` blocks above must be initialized */
+  /* before ready() can possibly fire its callback synchronously.        */
+  window.WebflowUploader = window.WebflowUploader || {};
+  window.WebflowUploader.init = initAllUploaders;
+
+  ready(function () {
+    initAllUploaders();
+    initExternalControls();
+  });
 })();
