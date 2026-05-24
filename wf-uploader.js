@@ -162,7 +162,7 @@
       },
     };
 
-    bindRequiredValidation(state);
+    bindFormGuards(state);
     render(state);
 
     dispatch(root, "wf-up:ready", { files: [] });
@@ -208,6 +208,16 @@
       successText: attr(root, "data-wf-up-success-text", "Uploaded"),
       errorText: attr(root, "data-wf-up-error-text", "Something went wrong. Please try again."),
       requiredText: attr(root, "data-wf-up-required-text", "Please upload a file."),
+      submittingText: attr(
+        root,
+        "data-wf-up-submitting-text",
+        "Please wait for the upload to finish."
+      ),
+      blockSubmitWhileUploading: boolAttr(
+        root,
+        "data-wf-up-block-submit-while-uploading",
+        true
+      ),
 
       accept: resolvedAccept,
       acceptPreset: acceptPreset,
@@ -295,6 +305,82 @@
 
     bindRenderedActions(state);
     updateOutput(state);
+    updateErrorBar(state);
+  }
+
+  /* Surgical per-row update. Avoids rebuilding the whole component DOM */
+  /* on every progress tick (the original code path called render()    */
+  /* hundreds of times per upload, killing focus / selection / perf).  */
+  /* Falls back to full render() if the row isn't in the DOM yet —     */
+  /* this can happen when the layout switches between empty / list /   */
+  /* preview shells based on file count.                                */
+  function updateRecord(state, record) {
+    if (!state.view || !record) return;
+
+    /* A single record can appear twice in some layouts (e.g. dropzone */
+    /* preview = big image + summary line below). Update all of them.  */
+    var rows = state.view.querySelectorAll(
+      '[data-wf-up-row-id="' + cssEscape(record.id) + '"]'
+    );
+
+    if (!rows.length) {
+      render(state);
+      return;
+    }
+
+    var c = state.config;
+    var statusText = renderStatus(record, c);
+    var metaText = renderRowMeta(record, c);
+
+    rows.forEach(function (row) {
+      row.setAttribute("data-wf-up-row-status", record.status || "pending");
+      row.setAttribute("data-wf-up-row-progress", record.progress || 0);
+
+      var statusEl = row.querySelector("[data-wf-up-status]");
+      if (!statusEl) return;
+
+      if (statusEl.classList.contains("wf-up__file-meta")) {
+        statusEl.innerHTML = metaText;
+      } else {
+        statusEl.innerHTML = statusText;
+      }
+    });
+
+    updateOutput(state);
+  }
+
+  /* Surgical error-bar update. Lets the component show/hide its error */
+  /* line without re-rendering everything.                              */
+  function updateErrorBar(state) {
+    if (!state.view) return;
+
+    var existing = state.view.querySelector("[data-wf-up-error-bar]");
+
+    if (state.error) {
+      if (existing) {
+        existing.textContent = state.error;
+        existing.hidden = false;
+      } else {
+        /* No bar in the current shell — full render to insert it. */
+        var bar = document.createElement("div");
+        bar.className = "wf-up__error";
+        bar.setAttribute("data-wf-up-error-bar", "");
+        bar.textContent = state.error;
+        var component = state.view.querySelector(".wf-up__component");
+        (component || state.view).appendChild(bar);
+      }
+    } else if (existing) {
+      existing.textContent = "";
+      existing.hidden = true;
+    }
+  }
+
+  /* CSS.escape() polyfill for IDs we generated ourselves (alnum + _). */
+  function cssEscape(value) {
+    if (window.CSS && typeof window.CSS.escape === "function") {
+      return window.CSS.escape(String(value));
+    }
+    return String(value).replace(/([^\w-])/g, "\\$1");
   }
 
   function bindRenderedActions(state) {
@@ -439,13 +525,13 @@
     try {
       record.status = "signing";
       record.progress = 0;
-      render(state);
+      updateRecord(state, record);
 
       var signed = await getSignedUploadUrl(record.file, state.config);
 
       record.status = "uploading";
       record.progress = 0;
-      render(state);
+      updateRecord(state, record);
 
       dispatch(state.root, "wf-up:upload-start", {
         file: recordToPublicFile(record),
@@ -454,7 +540,7 @@
 
       await uploadToR2(record.file, signed.uploadUrl, function (percent) {
         record.progress = percent;
-        render(state);
+        updateRecord(state, record);
 
         dispatch(state.root, "wf-up:upload-progress", {
           file: recordToPublicFile(record),
@@ -469,7 +555,8 @@
       record.publicUrl = signed.publicUrl || "";
 
       clearError(state);
-      render(state);
+      updateErrorBar(state);
+      updateRecord(state, record);
 
       dispatch(state.root, "wf-up:upload-success", {
         file: recordToPublicFile(record),
@@ -484,7 +571,8 @@
       record.error = error && error.message ? error.message : state.config.errorText;
 
       setError(state, record.error);
-      render(state);
+      updateRecord(state, record);
+      updateErrorBar(state);
 
       dispatch(state.root, "wf-up:upload-error", {
         error: error,
@@ -687,29 +775,51 @@
     };
   }
 
-  function bindRequiredValidation(state) {
-    if (!state.config.required) return;
-
+  function bindFormGuards(state) {
     var form = state.root.closest("form");
-
     if (!form) return;
 
-    form.addEventListener("submit", function (event) {
-      var hasUploadedFile = getUploadedFiles(state).length > 0;
+    form.addEventListener(
+      "submit",
+      function (event) {
+        /* 1. Block submit if any upload is still in flight. Without this   */
+        /*    the form posts with empty / partial values and the user      */
+        /*    silently loses their data.                                    */
+        if (state.config.blockSubmitWhileUploading && hasInFlightUploads(state)) {
+          event.preventDefault();
+          event.stopPropagation();
 
-      if (hasUploadedFile) return;
+          setError(state, state.config.submittingText);
+          updateErrorBar(state);
 
-      event.preventDefault();
-      event.stopPropagation();
+          state.root.scrollIntoView({ behavior: "smooth", block: "center" });
+          return;
+        }
 
-      setError(state, state.config.requiredText);
-      render(state);
+        /* 2. Required-field validation. */
+        if (state.config.required && getUploadedFiles(state).length === 0) {
+          event.preventDefault();
+          event.stopPropagation();
 
-      state.root.scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-      });
-    });
+          setError(state, state.config.requiredText);
+          updateErrorBar(state);
+
+          state.root.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      },
+      /* capture = true so we run before other validators on the form */
+      true
+    );
+  }
+
+  /* True if any record in this uploader is currently being signed or */
+  /* uploaded. Used to block premature form submission.                */
+  function hasInFlightUploads(state) {
+    for (var i = 0; i < state.files.length; i++) {
+      var status = state.files[i].status;
+      if (status === "signing" || status === "uploading") return true;
+    }
+    return false;
   }
 
   function setError(state, message) {
@@ -1102,7 +1212,7 @@
 
   function renderImageGridItem(file, c) {
     return (
-      '<div class="wf-up__image-grid-item">' +
+      '<div class="wf-up__image-grid-item" ' + rowAttrs(file) + ">" +
       (file.previewUrl
         ? '<img src="' + escapeAttr(file.previewUrl) + '" alt="' + escapeAttr(file.name) + '">'
         : renderIcon("image", c)) +
@@ -1113,7 +1223,7 @@
 
   function renderImageListRow(file, c) {
     return (
-      '<div class="wf-up__image-row">' +
+      '<div class="wf-up__image-row" ' + rowAttrs(file) + ">" +
       '<div class="wf-up__image-thumb">' +
       (file.previewUrl
         ? '<img src="' + escapeAttr(file.previewUrl) + '" alt="' + escapeAttr(file.name) + '">'
@@ -1123,8 +1233,8 @@
       '<div class="wf-up__file-name">' +
       escapeHtml(file.name) +
       "</div>" +
-      '<div class="wf-up__file-meta">' +
-      formatBytes(file.size) +
+      '<div class="wf-up__file-meta" data-wf-up-status>' +
+      renderRowMeta(file, c) +
       "</div>" +
       "</div>" +
       renderRemoveButton(file, c) +
@@ -1134,7 +1244,7 @@
 
   function renderFileRow(file, c) {
     return (
-      '<div class="wf-up__file-row">' +
+      '<div class="wf-up__file-row" ' + rowAttrs(file) + ">" +
       '<div class="wf-up__file-icon" aria-hidden="true">' +
       renderIcon(iconForFile(file), c) +
       "</div>" +
@@ -1146,7 +1256,7 @@
       formatBytes(file.size) +
       "</div>" +
       "</div>" +
-      '<div class="wf-up__file-status">' +
+      '<div class="wf-up__file-status" data-wf-up-status>' +
       renderStatus(file, c) +
       "</div>" +
       renderRemoveButton(file, c) +
@@ -1156,7 +1266,7 @@
 
   function renderSingleFileSummary(file, c) {
     return (
-      '<div class="wf-up__single-summary">' +
+      '<div class="wf-up__single-summary" ' + rowAttrs(file) + ">" +
       '<div class="wf-up__file-info">' +
       '<div class="wf-up__file-name">' +
       escapeHtml(file.name) +
@@ -1165,7 +1275,7 @@
       formatBytes(file.size) +
       "</div>" +
       "</div>" +
-      '<div class="wf-up__file-status">' +
+      '<div class="wf-up__file-status" data-wf-up-status>' +
       renderStatus(file, c) +
       "</div>" +
       renderRemoveButton(file, c) +
@@ -1175,7 +1285,7 @@
 
   function renderSingleImagePreview(file, c) {
     return (
-      '<div class="wf-up__single-image-preview">' +
+      '<div class="wf-up__single-image-preview" ' + rowAttrs(file) + ">" +
       '<img src="' +
       escapeAttr(file.previewUrl) +
       '" alt="' +
@@ -1188,7 +1298,7 @@
 
   function renderTableRow(file, c) {
     return (
-      "<tr>" +
+      "<tr " + rowAttrs(file) + ">" +
       '<td class="wf-up__table-cell wf-up__table-cell--name">' +
       '<div class="wf-up__table-file">' +
       '<span class="wf-up__table-file-icon">' +
@@ -1249,11 +1359,40 @@
 
   function renderError(state) {
     if (!state.error) return "";
-    return '<div class="wf-up__error">' + escapeHtml(state.error) + "</div>";
+    return (
+      '<div class="wf-up__error" data-wf-up-error-bar>' +
+      escapeHtml(state.error) +
+      "</div>"
+    );
   }
 
   function renderEmptyState(text) {
     return '<div class="wf-up__empty">' + escapeHtml(text) + "</div>";
+  }
+
+  /* Emit per-row identity + state attributes used by surgical updates */
+  /* and as CSS hooks for styling each row's status visually.           */
+  function rowAttrs(file) {
+    return (
+      'data-wf-up-row-id="' + escapeAttr(file.id) + '" ' +
+      'data-wf-up-row-status="' + escapeAttr(file.status || "pending") + '" ' +
+      'data-wf-up-row-progress="' + (file.progress || 0) + '"'
+    );
+  }
+
+  /* Compact one-liner used by image rows (which don't have a dedicated */
+  /* status slot like file-row does). Shows size, plus status text only */
+  /* while the upload is actively in flight or errored.                 */
+  function renderRowMeta(file, c) {
+    var size = formatBytes(file.size);
+    if (
+      file.status === "signing" ||
+      file.status === "uploading" ||
+      file.status === "error"
+    ) {
+      return size + " · " + renderStatus(file, c);
+    }
+    return size;
   }
 
   function renderStatus(file, c) {
