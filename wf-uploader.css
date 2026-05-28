@@ -266,6 +266,7 @@
 
 .wf-up__drop-area:focus-visible,
 .wf-up__drop-area:has(:focus-visible) {
+  outline: none;
   border-color: var(--wf-up-border-strong);
   box-shadow: 0 0 0 3px var(--wf-up-ring);
 }

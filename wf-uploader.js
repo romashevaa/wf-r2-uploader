@@ -133,11 +133,13 @@
     if (config.acceptPreset) root.setAttribute("data-wf-up-accept-preset", config.acceptPreset);
 
     root.innerHTML =
-      '<input class="wf-up__native-input" type="file" hidden data-wf-up-native-input>' +
+      '<input class="wf-up__native-input" type="file" hidden data-wf-up-native-input aria-label="' +
+      escapeAttr(config.buttonText || "Choose files") +
+      '">' +
       '<input type="hidden" name="' +
       escapeAttr(config.fieldName) +
       '" data-wf-up-output>' +
-      '<div class="wf-up__view" data-wf-up-view></div>';
+      '<div class="wf-up__view" data-wf-up-view aria-live="polite" aria-atomic="false"></div>';
 
     state.input = root.querySelector("[data-wf-up-native-input]");
     state.output = root.querySelector("[data-wf-up-output]");
@@ -423,12 +425,25 @@
     });
 
     state.view.querySelectorAll("[data-wf-up-dropzone]").forEach(function (zone) {
+      /* A11y: make the drop area keyboard-accessible */
+      if (!zone.getAttribute("tabindex")) zone.setAttribute("tabindex", "0");
+      zone.setAttribute("role", "button");
+      zone.setAttribute("aria-label", state.config.buttonText || "Choose files");
+
       zone.addEventListener("click", function (event) {
         if (event.target.closest && event.target.closest("[data-wf-up-action]")) {
           return;
         }
 
         state.input.click();
+      });
+
+      zone.addEventListener("keydown", function (event) {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          if (event.target.closest && event.target.closest("[data-wf-up-action]")) return;
+          state.input.click();
+        }
       });
 
       zone.addEventListener("dragover", function (event) {
@@ -749,6 +764,16 @@
 
     clearError(state);
     render(state);
+
+    /* A11y: move focus to the next logical element after removal. */
+    var nextRow = state.view.querySelector("[data-wf-up-row-id]");
+    if (nextRow) {
+      var btn = nextRow.querySelector("[data-wf-up-action]");
+      if (btn) btn.focus();
+    } else {
+      var zone = state.view.querySelector("[data-wf-up-dropzone]");
+      if (zone) zone.focus();
+    }
 
     dispatch(state.root, "wf-up:file-removed", {
       file: recordToPublicFile(removed),
