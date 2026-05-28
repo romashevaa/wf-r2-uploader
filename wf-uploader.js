@@ -218,6 +218,11 @@
         "data-wf-up-block-submit-while-uploading",
         true
       ),
+      retryText: attr(root, "data-wf-up-retry-text", "Retry upload"),
+      concurrency: Math.max(
+        1,
+        numberAttr(root, "data-wf-up-concurrency", 3)
+      ),
 
       accept: resolvedAccept,
       acceptPreset: acceptPreset,
@@ -267,6 +272,7 @@
       iconImage: attr(root, "data-wf-up-icon-image", ""),
       iconRemove: attr(root, "data-wf-up-icon-remove", ""),
       iconRemoveAll: attr(root, "data-wf-up-icon-remove-all", ""),
+      iconRetry: attr(root, "data-wf-up-icon-retry", ""),
     };
   }
 
@@ -407,6 +413,11 @@
 
         if (action === "remove") {
           removeFile(state, el.getAttribute("data-wf-up-id"));
+          return;
+        }
+
+        if (action === "retry") {
+          retryFile(state, el.getAttribute("data-wf-up-id"));
         }
       });
     });
@@ -499,8 +510,28 @@
     render(state);
 
     if (state.config.autoUpload) {
-      addedRecords.forEach(function (record) {
-        uploadRecord(record, state);
+      runUploadQueue(state);
+    }
+  }
+
+  /* Concurrency-bounded queue. Starts pending records up to the configured */
+  /* concurrency limit; each finished record triggers the next.             */
+  function runUploadQueue(state) {
+    var limit = Math.max(1, state.config.concurrency || 1);
+    var inFlight = 0;
+
+    for (var i = 0; i < state.files.length; i++) {
+      var s = state.files[i].status;
+      if (s === "signing" || s === "uploading") inFlight++;
+    }
+
+    for (var j = 0; j < state.files.length && inFlight < limit; j++) {
+      var rec = state.files[j];
+      if (rec.status !== "pending") continue;
+
+      inFlight++;
+      uploadRecord(rec, state).then(function () {
+        runUploadQueue(state);
       });
     }
   }
@@ -681,6 +712,24 @@
 
       return file.type === rule;
     });
+  }
+
+  function retryFile(state, id) {
+    var record = null;
+    for (var i = 0; i < state.files.length; i++) {
+      if (state.files[i].id === id) { record = state.files[i]; break; }
+    }
+
+    if (!record || record.status !== "error") return;
+
+    record.status = "pending";
+    record.progress = 0;
+    record.error = "";
+
+    clearError(state);
+    updateErrorBar(state);
+    updateRecord(state, record);
+    runUploadQueue(state);
   }
 
   function removeFile(state, id) {
@@ -1259,6 +1308,7 @@
       '<div class="wf-up__file-status" data-wf-up-status>' +
       renderStatus(file, c) +
       "</div>" +
+      renderRetryButton(file, c) +
       renderRemoveButton(file, c) +
       "</div>"
     );
@@ -1278,6 +1328,7 @@
       '<div class="wf-up__file-status" data-wf-up-status>' +
       renderStatus(file, c) +
       "</div>" +
+      renderRetryButton(file, c) +
       renderRemoveButton(file, c) +
       "</div>"
     );
@@ -1316,9 +1367,23 @@
       formatBytes(file.size) +
       "</td>" +
       '<td class="wf-up__table-cell wf-up__table-cell--actions">' +
+      renderRetryButton(file, c) +
       renderRemoveButton(file, c, "table") +
       "</td>" +
       "</tr>"
+    );
+  }
+
+  function renderRetryButton(file, c) {
+    return (
+      '<button class="wf-up__icon-button wf-up__retry-button" ' +
+      'data-wf-up-action="retry" data-wf-up-id="' +
+      escapeAttr(file.id) +
+      '" aria-label="' +
+      escapeAttr(c.retryText + " " + file.name) +
+      '">' +
+      renderIcon("refresh", c) +
+      "</button>"
     );
   }
 
@@ -1448,6 +1513,11 @@
       '<circle cx="9" cy="9" r="2" fill="none" stroke="currentColor" stroke-width="2"/>' +
       '<path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
       "</svg>",
+    refresh:
+      '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+      '<path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '<path d="M21 3v5h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+      "</svg>",
     x:
       '<svg viewBox="0 0 24 24" aria-hidden="true">' +
       '<path d="M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' +
@@ -1492,6 +1562,7 @@
     audio:      "iconFile",
     x:          "iconRemove",
     trash:      "iconRemoveAll",
+    refresh:    "iconRetry",
   };
 
   function renderIcon(type, c) {
