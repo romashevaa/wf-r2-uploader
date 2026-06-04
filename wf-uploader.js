@@ -551,6 +551,26 @@
     }
   }
 
+  /* Show a summary in the global error bar when any files have failed. */
+  /* Clears the bar if no files are in error state.                     */
+  function summarizeErrors(state) {
+    var errored = 0;
+    for (var i = 0; i < state.files.length; i++) {
+      if (state.files[i].status === "error") errored++;
+    }
+
+    if (errored === 0) {
+      clearError(state);
+    } else if (errored === 1) {
+      var rec = state.files.find(function (f) { return f.status === "error"; });
+      setError(state, rec ? rec.error : state.config.errorText);
+    } else {
+      setError(state, errored + " file(s) failed to upload.");
+    }
+
+    updateErrorBar(state);
+  }
+
   function createFileRecord(file) {
     return {
       id: uniqueId(),
@@ -616,9 +636,8 @@
       record.status = "error";
       record.error = error && error.message ? error.message : state.config.errorText;
 
-      setError(state, record.error);
       updateRecord(state, record);
-      updateErrorBar(state);
+      summarizeErrors(state);
 
       dispatch(state.root, "wf-up:upload-error", {
         error: error,
@@ -741,8 +760,7 @@
     record.progress = 0;
     record.error = "";
 
-    clearError(state);
-    updateErrorBar(state);
+    summarizeErrors(state);
     updateRecord(state, record);
     runUploadQueue(state);
   }
